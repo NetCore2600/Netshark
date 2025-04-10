@@ -222,14 +222,6 @@ int main(int argc, char **argv) {
     return 0;
 }
 ```
-
-### Points Clés du Programme :
-1. **Capture de Paquets** : Utilise la bibliothèque libpcap pour capturer les paquets réseau
-2. **Analyse des Protocoles** : Décodage des en-têtes Ethernet, IP et TCP
-3. **Filtrage** : Possibilité de filtrer les paquets avec une expression BPF
-4. **Affichage** : Format similaire à Tshark avec informations détaillées
-5. **Gestion des Erreurs** : Vérifications à chaque étape avec messages d'erreur appropriés
-
 ### Compilation et Utilisation :
 ```bash
 gcc main.c -lpcap -o tshark
