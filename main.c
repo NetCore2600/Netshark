@@ -10,59 +10,10 @@
    ./tshark -i eth0 -f "tcp"
 */
 
-#include <stdio.h>
-#include <pcap.h>
-#include <string.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <time.h>
-#include <net/ethernet.h>
-#include <netinet/tcp.h>
-#include <netinet/ip.h>
-
-// Définitions des flags TCP
-#define TH_FIN  0x01
-#define TH_SYN  0x02
-#define TH_RST  0x04
-#define TH_PUSH 0x08
-#define TH_ACK  0x10
-#define TH_URG  0x20
-
-// Structures pour les en-têtes
-struct eth_header {
-    u_char ether_dhost[6];
-    u_char ether_shost[6];
-    u_short ether_type;
-};
-
-struct ip_header {
-    u_char ip_vhl;
-    u_char ip_tos;
-    u_short ip_len;
-    u_short ip_id;
-    u_short ip_off;
-    u_char ip_ttl;
-    u_char ip_p;
-    u_short ip_sum;
-    struct in_addr ip_src;
-    struct in_addr ip_dst;
-};
-
-struct tcp_header {
-    u_short th_sport;
-    u_short th_dport;
-    u_int th_seq;
-    u_int th_ack;
-    u_char th_offx2;
-    u_char th_flags;
-    u_short th_win;
-    u_short th_sum;
-    u_short th_urp;
-};
+#include "tshark.h"
 
 // Fonction pour obtenir les flags TCP
-void get_tcp_flags(u_char flags, char *flag_str) {
+void get_tcp_flags(unsigned char flags, char *flag_str) {
     flag_str[0] = '\0';
     if (flags & TH_FIN) strcat(flag_str, "FIN ");
     if (flags & TH_SYN) strcat(flag_str, "SYN ");
@@ -72,11 +23,11 @@ void get_tcp_flags(u_char flags, char *flag_str) {
     if (flags & TH_URG) strcat(flag_str, "URG ");
 }
 
-void packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char *packet) 
+void packet_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) 
 {
-    struct eth_header *eth;
-    struct ip_header *ip;
-    struct tcp_header *tcp;
+    eth_header *eth;
+    ip_header *ip;
+    tcp_header *tcp;
     char flag_str[20];
     int size_ip;
     int size_tcp;
@@ -88,7 +39,7 @@ void packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char
     packet_count++;
 
     // Pointeur vers l'en-tête Ethernet
-    eth = (struct eth_header *)packet;
+    eth = (eth_header *)packet;
 
     // Vérifier si c'est un paquet IP
     if (ntohs(eth->ether_type) != ETHERTYPE_IP) {
@@ -96,7 +47,7 @@ void packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char
     }
 
     // Pointeur vers l'en-tête IP
-    ip = (struct ip_header *)(packet + sizeof(struct eth_header));
+    ip = (ip_header *)(packet + sizeof(eth_header));
     size_ip = (ip->ip_vhl & 0x0f) * 4;
 
     // Vérifier si c'est un paquet TCP
@@ -105,7 +56,7 @@ void packet_handler(u_char *args, const struct pcap_pkthdr *header, const u_char
     }
 
     // Pointeur vers l'en-tête TCP
-    tcp = (struct tcp_header *)(packet + sizeof(struct eth_header) + size_ip);
+    tcp = (tcp_header *)(packet + sizeof(eth_header) + size_ip);
     size_tcp = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
 
     // Convertir les adresses IP en chaînes
