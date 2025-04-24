@@ -1,3 +1,6 @@
+#ifndef NETCORE_H
+# define NETCORE_H
+
 #include <stdio.h>
 #include <pcap.h>
 #include <string.h>
@@ -13,24 +16,30 @@
 
 
 /***********************************|
-|              MACRO                |
-|__________________________________*/
-
-// Définitions des flags TCP
-#define TH_FIN  0x01
-#define TH_SYN  0x02
-#define TH_RST  0x04
-#define TH_PUSH 0x08
-#define TH_ACK  0x10
-#define TH_URG  0x20
-
-
-
-
-
-/***********************************|
 |             STRUCT                |
 |__________________________________*/
+
+// Arguments given when launching the program 
+typedef struct _Args {
+    char *dev;
+    char *filter_exp;
+}               Args;
+
+// The full context of the application
+typedef struct  NetCore {
+    // A linked list of all devices from our system
+    pcap_if_t *alldevs;
+
+    // The is a buffer reserved for the packet handler
+    // It is used to store the error/warning messages during capture
+    char errbuf[PCAP_ERRBUF_SIZE];
+    
+    // The actual handler function that will be triggered
+    // each time a packet is captured
+    pcap_t *handle;
+    struct bpf_program fp;
+    bpf_u_int32 net;
+}               NetCore;
 
 // Structures pour les en-têtes
 typedef struct _eth_header {
@@ -52,14 +61,13 @@ typedef struct  _ip_header {
     struct in_addr ip_dst;
 }               ip_header;
 
-typedef struct  _tcp_header {
-    unsigned short th_sport;
-    unsigned short th_dport;
-    unsigned int th_seq;
-    unsigned int th_ack;
-    unsigned char th_offx2;
-    unsigned char th_flags;
-    unsigned short th_win;
-    unsigned short th_sum;
-    unsigned short th_urp;
-}               tcp_header;
+
+
+
+
+/***********************************|
+|           PROTOTYPE               |
+|__________________________________*/
+void init(NetCore *n, Args args);
+
+#endif /* NETCORE_H */
