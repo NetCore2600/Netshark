@@ -1,4 +1,4 @@
-/* Netcore - NetShark
+/* Netcore 2600 - NetShark
 
    Jonathan Tondelier
    Elie Marouani
@@ -6,7 +6,7 @@
    Loris Danel
 */
 
-#include "netcore.h"
+#include "netshark.h"
 #include "handler.h"
 
 
@@ -46,7 +46,7 @@ void parser_args(Args *args, int argc, char **argv) {
 
 int main(int argc, char **argv) {
     Args args;
-    NetCore app;
+    NetShark app;
 
     parser_args(&args, argc, argv);
 

@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra -Iinclude
 # Directories
 SRC_DIR = src
 BUILD_DIR = build
-BIN = tshark
+BIN = netshark
 
 # Find all .c files recursively
 SRCS = $(shell find $(SRC_DIR) -name '*.c')
