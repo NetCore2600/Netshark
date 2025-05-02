@@ -1,5 +1,5 @@
 #include "handler.h"
-#include "netcore.h"
+#include "netshark.h"
 
 // Callback pour la capture
 void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {

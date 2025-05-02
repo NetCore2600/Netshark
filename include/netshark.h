@@ -24,7 +24,7 @@ typedef struct _Args {
 }               Args;
 
 // The full context of the application
-typedef struct  NetCore {
+typedef struct  NetShark {
     // A linked list of all devices from our system
     pcap_if_t *alldevs;
 
@@ -38,7 +38,7 @@ typedef struct  NetCore {
     void *handler;
     struct bpf_program fp;
     bpf_u_int32 net;
-}               NetCore;
+}               NetShark;
 
 // Structures pour les en-têtes
 typedef struct _eth_header {
@@ -69,7 +69,7 @@ typedef struct  _ip_header {
 |__________________________________*/
 
 // /src/init.c
-void init(NetCore *n, Args args);
+void init(NetShark *n, Args args);
 
 
 

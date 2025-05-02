@@ -1,4 +1,4 @@
-#include "netcore.h"
+#include "netshark.h"
 #include "handler.h"
 
 
@@ -10,7 +10,7 @@ static HandlerPacket handlers = {
     .http = NULL
 };
 
-static void init_inet(NetCore *n, Args args) {
+static void init_inet(NetShark *n, Args args) {
     // Get the list of devices
     if (pcap_findalldevs(&n->alldevs, n->errbuf) == -1) {
         fprintf(stderr, "Error finding devices: %s\n", n->errbuf);
@@ -44,7 +44,7 @@ static void init_inet(NetCore *n, Args args) {
  * see: https://www.tcpdump.org/manpages/pcap_open_live.3pcap.html
  * 
  */
-static void init_pcap_handle(NetCore *n) {
+static void init_pcap_handle(NetShark *n) {
     // Open the session in promiscuous mode
     n->handle = pcap_open_live(n->alldevs->name, BUFSIZ, 1, 1000, n->errbuf);
     if (n->handle == NULL) {
@@ -54,7 +54,7 @@ static void init_pcap_handle(NetCore *n) {
     }
 }
 
-static void init_datalink(NetCore *n) {
+static void init_datalink(NetShark *n) {
     // Get the data link type
     int datalink = pcap_datalink(n->handle);
     switch (datalink) {
@@ -72,7 +72,7 @@ static void init_datalink(NetCore *n) {
     }
 }
 
-static void init_filter(NetCore *n, Args args) {
+static void init_filter(NetShark *n, Args args) {
     // Compile and apply the filter
     if (pcap_compile(n->handle, &n->fp, args.filter_exp, 0, n->net) == -1) {
         fprintf(stderr, "Couldn't parse filter %s: %s\n", args.filter_exp, pcap_geterr(n->handle));
@@ -90,7 +90,7 @@ static void init_filter(NetCore *n, Args args) {
     }
 }
 
-static void init_packet_handler(NetCore *n, Args args) {
+static void init_packet_handler(NetShark *n, Args args) {
     
     if (!strcmp(args.filter_exp, "tcp")) n->handler = handlers.tcp;
     if (!strcmp(args.filter_exp, "udp")) n->handler = handlers.udp;
@@ -105,7 +105,7 @@ static void init_packet_handler(NetCore *n, Args args) {
     }
 }
 
-void init(NetCore *n, Args args) {
+void init(NetShark *n, Args args) {
     n->alldevs = NULL;
     n->handle = NULL;
     n->handler = NULL;
