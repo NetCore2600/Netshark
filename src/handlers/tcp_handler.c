@@ -2,7 +2,7 @@
 #include "netcore.h"
 
 // Callback pour la capture
-void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void tcp_handler(const struct pcap_pkthdr *header, const unsigned char *packet) {
     eth_header *eth;
     ip_header *ip;
     tcp_header *tcp;
@@ -21,7 +21,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête IP
-    ip = (struct ip_header *)(packet + sizeof(eth_header));
+    ip = (ip_header *)(packet + sizeof(eth_header));
     size_ip = (ip->ip_vhl & 0x0f) * 4;
 
     // Vérifier si c'est un paquet TCP
@@ -30,7 +30,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête TCP
-    tcp = (struct tcp_header *)(packet + sizeof(eth_header) + size_ip);
+    tcp = (tcp_header *)(packet + sizeof(eth_header) + size_ip);
     size_tcp = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
 
     // Convertir les adresses IP en chaînes
