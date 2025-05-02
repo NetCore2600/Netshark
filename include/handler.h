@@ -1,5 +1,5 @@
-#ifndef TCP_PARSER_H
-#define TCP_PARSER_H
+#ifndef HANDLER_H
+#define HANDLER_H
 
 #include "netcore.h"
 
@@ -16,6 +16,17 @@
 /***********************************|
 |            STRUCTURE              |
 |__________________________________*/
+
+
+// HandlerPacket structure with void return functions
+typedef struct {
+    void (*tcp)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*udp)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*arp)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*ftp)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*http)(const struct pcap_pkthdr *header, const unsigned char *packet);
+} HandlerPacket;
+
 
 // TCP
 typedef struct  _tcp_header {
@@ -37,9 +48,7 @@ typedef struct  _tcp_header {
 // ARP
 
 
-
 // FTP
-
 
 
 // HTTP
@@ -52,6 +61,15 @@ typedef struct  _tcp_header {
 |            PROTOTYPE              |
 |__________________________________*/
 
-void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+// /handlers/tcp_handler.c
+void tcp_handler(const struct pcap_pkthdr *header, const unsigned char *packet);
+void get_tcp_flags(unsigned char flags, char *str);
 
-#endif /* TCP_PARSER_H */
+
+
+
+
+
+
+
+#endif /* HANDLER_H */

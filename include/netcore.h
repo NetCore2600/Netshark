@@ -13,8 +13,6 @@
 #include <netinet/ip.h>
 #include <sys/types.h>
 
-
-
 /***********************************|
 |             STRUCT                |
 |__________________________________*/
@@ -37,6 +35,7 @@ typedef struct  NetCore {
     // The actual handler function that will be triggered
     // each time a packet is captured
     pcap_t *handle;
+    void *handler;
     struct bpf_program fp;
     bpf_u_int32 net;
 }               NetCore;
@@ -68,6 +67,12 @@ typedef struct  _ip_header {
 /***********************************|
 |           PROTOTYPE               |
 |__________________________________*/
+
+// /src/init.c
 void init(NetCore *n, Args args);
+
+
+
+
 
 #endif /* NETCORE_H */

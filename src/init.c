@@ -1,4 +1,14 @@
 #include "netcore.h"
+#include "handler.h"
+
+
+static HandlerPacket handlers = {
+    .tcp = tcp_handler,
+    .udp = NULL,
+    .arp = NULL,
+    .ftp = NULL,
+    .http = NULL
+};
 
 static void init_inet(NetCore *n, Args args) {
     // Get the list of devices
@@ -80,15 +90,40 @@ static void init_filter(NetCore *n, Args args) {
     }
 }
 
+static void init_packet_handler(NetCore *n, Args args) {
+    
+    if (!strcmp(args.filter_exp, "tcp")) n->handler = handlers.tcp;
+    if (!strcmp(args.filter_exp, "udp")) n->handler = handlers.udp;
+    if (!strcmp(args.filter_exp, "arp")) n->handler = handlers.arp;
+    if (!strcmp(args.filter_exp, "ftp")) n->handler = handlers.ftp;
+    if (!strcmp(args.filter_exp, "http")) n->handler = handlers.http;
+    // add more as needed...
+
+    if (!n->handler) {
+        fprintf(stderr, "Unsupported filter: %s\n", args.filter_exp);
+        exit(1);
+    }
+}
+
 void init(NetCore *n, Args args) {
     n->alldevs = NULL;
     n->handle = NULL;
+    n->handler = NULL;
     n->fp.bf_insns = NULL;
     n->fp.bf_len = 0;
     n->net = 0;
+
+    // HandlerPacket handlers = {
+    //     .tcp = tcp_handler,
+    //     .udp = NULL,
+    //     .arp = NULL,
+    //     .ftp = NULL,
+    //     .http = NULL
+    // };
 
     init_inet(n, args);
     init_pcap_handle(n);
     init_datalink(n);
     init_filter(n, args);
+    init_packet_handler(n, args);
 }
