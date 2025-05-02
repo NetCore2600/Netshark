@@ -113,14 +113,6 @@ void init(NetCore *n, Args args) {
     n->fp.bf_len = 0;
     n->net = 0;
 
-    // HandlerPacket handlers = {
-    //     .tcp = tcp_handler,
-    //     .udp = NULL,
-    //     .arp = NULL,
-    //     .ftp = NULL,
-    //     .http = NULL
-    // };
-
     init_inet(n, args);
     init_pcap_handle(n);
     init_datalink(n);

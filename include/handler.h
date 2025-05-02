@@ -20,7 +20,7 @@
 
 // HandlerPacket structure with void return functions
 typedef struct {
-    void (*tcp)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*tcp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*udp)(const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*arp)(const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*ftp)(const struct pcap_pkthdr *header, const unsigned char *packet);
@@ -62,7 +62,7 @@ typedef struct  _tcp_header {
 |__________________________________*/
 
 // /handlers/tcp_handler.c
-void tcp_handler(const struct pcap_pkthdr *header, const unsigned char *packet);
+void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 void get_tcp_flags(unsigned char flags, char *str);
 
 
