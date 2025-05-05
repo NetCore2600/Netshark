@@ -13,6 +13,8 @@
 #include <netinet/ip.h>
 #include <sys/types.h>
 
+#include "handler.h"
+
 /***********************************|
 |             STRUCT                |
 |__________________________________*/

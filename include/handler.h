@@ -52,6 +52,17 @@ typedef struct  _tcp_header {
 
 
 // HTTP
+typedef struct  _http_header {
+    unsigned short th_sport;
+    unsigned short th_dport;
+    unsigned int th_seq;
+    unsigned int th_ack;
+    unsigned char th_offx2;
+    unsigned char th_flags;
+    unsigned short th_win;
+    unsigned short th_sum;
+    unsigned short th_urp;
+}               http_header;
 
 
 
@@ -65,6 +76,8 @@ typedef struct  _tcp_header {
 void tcp_handler(const struct pcap_pkthdr *header, const unsigned char *packet);
 void get_tcp_flags(unsigned char flags, char *str);
 
+// /handlers/http_handler.c
+void http_handler(const struct pcap_pkthdr *header, const unsigned char *packet);
 
 
 

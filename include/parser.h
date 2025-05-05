@@ -34,5 +34,6 @@
 |__________________________________*/
 
 void parse_tcp_packet(const unsigned char *packet, int packet_len);
+void http_parse(ip_header *ip, http_header *http, const u_char *payload, int payload_len);
 
 #endif /* TCP_PARSER_H */

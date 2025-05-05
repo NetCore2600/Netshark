@@ -1,6 +1,8 @@
 {
   "files.associations": {
     "tcp.h": "c",
-    "ip.h": "c"
-  }
+    "ip.h": "c",
+    "netcore.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }

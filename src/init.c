@@ -7,7 +7,7 @@ static HandlerPacket handlers = {
     .udp = NULL,
     .arp = NULL,
     .ftp = NULL,
-    .http = NULL
+    .http = http_handler
 };
 
 static void init_inet(NetCore *n, Args args) {
@@ -73,16 +73,24 @@ static void init_datalink(NetCore *n) {
 }
 
 static void init_filter(NetCore *n, Args args) {
-    // Compile and apply the filter
-    if (pcap_compile(n->handle, &n->fp, args.filter_exp, 0, n->net) == -1) {
-        fprintf(stderr, "Couldn't parse filter %s: %s\n", args.filter_exp, pcap_geterr(n->handle));
+    const char *filter_exp = args.filter_exp;
+
+    // Traduction logique vers filtre BPF
+    if (strcmp(args.filter_exp, "http") == 0) {
+        filter_exp = "tcp port 80";
+    } else if (strcmp(args.filter_exp, "ftp") == 0) {
+        filter_exp = "tcp port 21";
+    }
+
+    if (pcap_compile(n->handle, &n->fp, filter_exp, 0, n->net) == -1) {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(n->handle));
         pcap_close(n->handle);
         pcap_freealldevs(n->alldevs);
         exit(4);
     }
 
     if (pcap_setfilter(n->handle, &n->fp) == -1) {
-        fprintf(stderr, "Couldn't install filter %s: %s\n", args.filter_exp, pcap_geterr(n->handle));
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(n->handle));
         pcap_freecode(&n->fp);
         pcap_close(n->handle);
         pcap_freealldevs(n->alldevs);
@@ -122,8 +130,17 @@ void init(NetCore *n, Args args) {
     // };
 
     init_inet(n, args);
+    printf("inet");
     init_pcap_handle(n);
+    printf("pcap_handle");
+
     init_datalink(n);
+    printf("datalink");
+
     init_filter(n, args);
+    printf("filter");
+
     init_packet_handler(n, args);
+    printf("packet_handler");
+
 }
