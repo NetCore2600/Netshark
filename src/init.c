@@ -4,9 +4,9 @@
 
 static HandlerPacket handlers = {
     .tcp = tcp_handler,
-    .udp = NULL,
-    .arp = NULL,
-    .ftp = NULL,
+    .udp = udp_handler,
+    .arp = arp_handler,
+    .ftp = ftp_handler,
     .http = NULL
 };
 

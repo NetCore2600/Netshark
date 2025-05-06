@@ -2,3 +2,5 @@
 build
 netshark
 cmd
+parser_temp
+scripts
