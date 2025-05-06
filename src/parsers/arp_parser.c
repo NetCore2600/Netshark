@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "handler.h"
 
-void parse_arp_packet(const unsigned char *packet, int packet_len) {
+void parse_arp_packet(const unsigned char *packet, size_t packet_len) {
     if (packet_len < sizeof(struct _arp_header)) {
         printf("Paquet ARP trop court\n");
         return;
@@ -26,17 +26,7 @@ void parse_arp_packet(const unsigned char *packet, int packet_len) {
              arp->ar_tha[0], arp->ar_tha[1], arp->ar_tha[2],
              arp->ar_tha[3], arp->ar_tha[4], arp->ar_tha[5]);
 
-    printf("\n=== ARP Packet Details ===\n");
-    printf("Hardware Type: %s\n", ntohs(arp->ar_hrd) == ARP_HARDWARE_TYPE_ETHERNET ? "Ethernet" : "Unknown");
-    printf("Protocol Type: IPv4\n");
-    printf("Hardware Size: %d\n", arp->ar_hln);
-    printf("Protocol Size: %d\n", arp->ar_pln);
-    printf("Operation: %s\n", ntohs(arp->ar_op) == ARP_REQUEST ? "Request" : "Reply");
-    printf("Source MAC: %s\n", src_mac);
-    printf("Source IP: %s\n", src_ip);
-    printf("Target MAC: %s\n", dst_mac);
-    printf("Target IP: %s\n", dst_ip);
-    printf("==========================\n");
+    
 }
 
 

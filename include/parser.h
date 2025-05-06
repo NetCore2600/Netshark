@@ -82,10 +82,10 @@
 |            PROTOTYPE              |
 |__________________________________*/
 
-void parse_tcp_packet(const unsigned char *packet, int packet_len);
-void parse_udp_packet(const unsigned char *packet, int packet_len);
-void parse_arp_packet(const unsigned char *packet, int packet_len);
-void parse_ftp_packet(const unsigned char *packet, int packet_len);
+void parse_tcp_packet(const unsigned char *packet, size_t packet_len);
+void parse_udp_packet(const unsigned char *packet, size_t packet_len);
+void parse_arp_packet(const unsigned char *packet, size_t packet_len);
+void parse_ftp_packet(const unsigned char *packet, size_t packet_len);
 
 
 

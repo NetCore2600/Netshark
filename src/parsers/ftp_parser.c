@@ -1,9 +1,8 @@
 #include "parser.h"
 
-
-void parse_ftp_packet(const unsigned char *payload, int payload_len) {
-    char *data = (char *)payload;
-    char *end = data + payload_len;
+void parse_ftp_packet(const unsigned char *packet, size_t packet_len) {
+    char *data = (char *)packet;
+    char *end = data + packet_len;
     
     // Recherche des commandes FTP courantes
     if (strncmp(data, FTP_CMD_USER, strlen(FTP_CMD_USER)) == 0) {
@@ -53,9 +52,9 @@ void parse_ftp_packet(const unsigned char *payload, int payload_len) {
     else if (strncmp(data, FTP_CMD_PWD, strlen(FTP_CMD_PWD)) == 0) {
         printf("FTP: Demande du répertoire courant\n");
     }
-    else if (payload_len > 0) {
+    else if (packet_len > 0) {
         // Afficher les autres données FTP
-        printf("FTP: Données: %.*s\n", payload_len, data);
+        printf("FTP: Données: %.*s\n", (int)packet_len, data);
     }
 }
 
