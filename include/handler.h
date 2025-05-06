@@ -25,7 +25,7 @@ typedef struct {
     void (*udp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*arp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*ftp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-    void (*http)(const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*http)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 } HandlerPacket;
 
 
@@ -107,6 +107,7 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
 void print_ftp_command(const ftp_command *cmd);
 void print_ftp_response(const ftp_response *resp);
 
+void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 
 
 

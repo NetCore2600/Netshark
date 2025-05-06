@@ -27,6 +27,8 @@ typedef struct _Args {
 typedef struct  NetShark {
     // A linked list of all devices from our system
     pcap_if_t *alldevs;
+    // The selected device for capture
+    pcap_if_t *selected_dev;
 
     // The is a buffer reserved for the packet handler
     // It is used to store the error/warning messages during capture

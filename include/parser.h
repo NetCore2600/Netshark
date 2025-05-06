@@ -33,6 +33,8 @@
 #define FTP_PORT        21
 #define FTP_DATA_PORT   20
 
+
+
 // Commandes FTP de base
 #define FTP_CMD_USER "USER"
 #define FTP_CMD_PASS "PASS"
@@ -68,7 +70,24 @@
 #define FTP_CMD_HELP "HELP"
 #define FTP_CMD_NOOP "NOOP"
 
+// Structure pour les méthodes HTTP courantes
+#define HTTP_METHOD_GET     "GET"
+#define HTTP_METHOD_POST    "POST"
+#define HTTP_METHOD_PUT     "PUT"
+#define HTTP_METHOD_DELETE  "DELETE"
+#define HTTP_METHOD_HEAD    "HEAD"
+#define HTTP_METHOD_OPTIONS "OPTIONS"
+#define HTTP_METHOD_TRACE   "TRACE"
+#define HTTP_METHOD_CONNECT "CONNECT"
 
+// Structure pour les versions HTTP
+#define HTTP_VERSION_1_0    "HTTP/1.0"
+#define HTTP_VERSION_1_1    "HTTP/1.1"
+#define HTTP_VERSION_2_0    "HTTP/2.0"
+
+// Définitions des ports HTTP
+#define HTTP_PORT       80
+#define HTTP_PORT_ALT   8080
 
 /***********************************|
 |            STRUCTURE              |
@@ -86,6 +105,7 @@ void parse_tcp_packet(const unsigned char *packet, size_t packet_len);
 void parse_udp_packet(const unsigned char *packet, size_t packet_len);
 void parse_arp_packet(const unsigned char *packet, size_t packet_len);
 void parse_ftp_packet(const unsigned char *packet, size_t packet_len);
+void parse_http_packet(const unsigned char *packet, size_t packet_len);
 
 
 
