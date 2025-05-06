@@ -68,6 +68,3 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 }
 
-void print_ftp_command(const ftp_command *cmd);
-void print_ftp_response(const ftp_response *resp);
-

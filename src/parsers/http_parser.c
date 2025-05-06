@@ -1,19 +1,6 @@
 #include "parser.h"
 
-// Structure pour les méthodes HTTP courantes
-#define HTTP_METHOD_GET     "GET"
-#define HTTP_METHOD_POST    "POST"
-#define HTTP_METHOD_PUT     "PUT"
-#define HTTP_METHOD_DELETE  "DELETE"
-#define HTTP_METHOD_HEAD    "HEAD"
-#define HTTP_METHOD_OPTIONS "OPTIONS"
-#define HTTP_METHOD_TRACE   "TRACE"
-#define HTTP_METHOD_CONNECT "CONNECT"
 
-// Structure pour les versions HTTP
-#define HTTP_VERSION_1_0    "HTTP/1.0"
-#define HTTP_VERSION_1_1    "HTTP/1.1"
-#define HTTP_VERSION_2_0    "HTTP/2.0"
 
 void parse_http_packet(const unsigned char *packet, size_t packet_len) {
     char *data = (char *)packet;

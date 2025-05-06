@@ -96,16 +96,14 @@ void get_tcp_flags(unsigned char flags, char *str);
 
 // /handlers/udp_handler.c
 void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-void print_udp_header(const udp_header *udp);
+
 
 // /handlers/arp_handler.c
 void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-void print_arp_header(const arp_header *arp);
+
 
 // /handlers/ftp_handler.c
 void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-void print_ftp_command(const ftp_command *cmd);
-void print_ftp_response(const ftp_response *resp);
 
 void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 

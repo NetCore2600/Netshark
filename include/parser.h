@@ -1,10 +1,7 @@
-#ifndef TCP_PARSER_H
-#define TCP_PARSER_H
+#ifndef PARSER_H
+#define PARSER_H
 
 #include "netshark.h"
-
-
-
 
 /***********************************|
 |              MACRO                |
@@ -16,7 +13,7 @@
 #define TH_RST  0x04
 #define TH_PUSH 0x08
 #define TH_ACK  0x10
-#define TH_URG  0x20
+#define TH_URG  0x20    
 
 // Définitions des flags UDP
 #define UDP_SOURCE_PORT 0x0001
@@ -32,8 +29,6 @@
 // Définitions des ports FTP
 #define FTP_PORT        21
 #define FTP_DATA_PORT   20
-
-
 
 // Commandes FTP de base
 #define FTP_CMD_USER "USER"
@@ -95,18 +90,17 @@
 
 
 
-
-
 /***********************************|
 |            PROTOTYPE              |
 |__________________________________*/
 
-void parse_tcp_packet(const unsigned char *packet, size_t packet_len);
-void parse_udp_packet(const unsigned char *packet, size_t packet_len);
+// Déclarations des fonctions de parsing
 void parse_arp_packet(const unsigned char *packet, size_t packet_len);
 void parse_ftp_packet(const unsigned char *packet, size_t packet_len);
+void parse_tcp_packet(const unsigned char *packet, size_t packet_len);
+void parse_udp_packet(const unsigned char *packet, size_t packet_len);
 void parse_http_packet(const unsigned char *packet, size_t packet_len);
 
 
 
-#endif /* TCP_PARSER_H */
+#endif /* PARSER_H */

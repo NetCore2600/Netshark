@@ -16,8 +16,5 @@ void parse_tcp_packet(const unsigned char *packet, size_t packet_len) {
     (void)packet_len;
 }
 
-void print_tcp_header(const struct _tcp_header *tcp) {
-    (void)tcp;
-    
-}
+
 
