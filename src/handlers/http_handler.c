@@ -1,6 +1,5 @@
 #include "handler.h"
 #include "netshark.h"
-#include "parser.h"
 
 void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
     (void)args;
