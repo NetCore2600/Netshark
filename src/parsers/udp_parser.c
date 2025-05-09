@@ -1,2 +1,10 @@
-void parse_udp(void) {}
-void print_udp(void) {}
+#include "parser.h"
+
+
+void parse_udp_packet(const unsigned char *packet, size_t packet_len) {
+   (void)packet;
+   (void)packet_len;
+
+}
+
+

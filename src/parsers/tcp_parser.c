@@ -11,6 +11,10 @@ void get_tcp_flags(unsigned char flags, char *flag_str) {
     if (flags & TH_URG) strcat(flag_str, "URG ");
 }
 
-void parse_tcp(void) {}
-void print_tcp(void) {}
+void parse_tcp_packet(const unsigned char *packet, size_t packet_len) {
+    (void)packet;
+    (void)packet_len;
+}
+
+
 
