@@ -39,6 +39,7 @@ Note: The program requires root privileges to capture network packets. Run it wi
 
 
 ### Architecture
+![Netshark](img/image.png)
 
 Netshark is a network packet analyzer built with a modular and layered architecture. Here's how the components work together:
 
