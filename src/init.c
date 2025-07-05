@@ -76,7 +76,7 @@ static void init_datalink(NetShark *n) {
 static void init_filter(NetShark *n, Args args) {
     char *filter_exp = args.filter_exp;
     char bpf_filter[256] = {0};
-
+    
     // Traduction logique vers filtre BPF
     if (strcmp(args.filter_exp, "http") == 0) {
         filter_exp = "tcp port 80";
@@ -93,7 +93,10 @@ static void init_filter(NetShark *n, Args args) {
     // Copier le filtre traduit
     strncpy(bpf_filter, filter_exp, sizeof(bpf_filter) - 1);
 
-    printf("Applying BPF filter: %s\n", bpf_filter);  // Debug line
+    if (DEBUG_MODE) {
+        printf("Filter expression: %s\n", filter_exp);
+        printf("Applying BPF filter: %s\n", bpf_filter);
+    }
 
     // Compiler et appliquer le filtre
     if (pcap_compile(n->handle, &n->fp, bpf_filter, 0, n->net) == -1) {

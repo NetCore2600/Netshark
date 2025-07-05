@@ -9,7 +9,14 @@
 #include "netshark.h"
 #include "handler.h"
 
+int DEBUG_MODE = 0;
 
+void parse_env() {
+    char *debug = getenv("DEBUG");
+    if (debug) {
+        DEBUG_MODE = 1;
+    }
+}
 
 void print_usage(char *program_name) {
     printf("Usage: %s -i interface -f \"filter\"\n", program_name);
@@ -48,6 +55,7 @@ int main(int argc, char **argv) {
     Args args;
     NetShark app;
 
+    parse_env();
     parser_args(&args, argc, argv);
 
     init(&app, args);

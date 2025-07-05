@@ -13,6 +13,10 @@
 #include <netinet/ip.h>
 #include <sys/types.h>
 
+
+extern int DEBUG_MODE;
+
+
 /***********************************|
 |             STRUCT                |
 |__________________________________*/
