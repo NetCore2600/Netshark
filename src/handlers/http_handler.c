@@ -1,10 +1,11 @@
-#include "handler.h"
+#include "protocol.h"
 #include "netshark.h"
 #include "parser.h"
 
-void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
+{
     (void)args;
-    
+
     struct ether_header *eth;
     struct iphdr *ip;
     tcp_header *tcp;
@@ -25,9 +26,10 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
 
     // Analyse de l'en-tête Ethernet
     eth = (struct ether_header *)packet;
-    
+
     // Vérification que c'est bien un paquet IP
-    if (ntohs(eth->ether_type) != ETHERTYPE_IP) {
+    if (ntohs(eth->ether_type) != ETHERTYPE_IP)
+    {
         return;
     }
 
@@ -36,7 +38,8 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
     ip_header_len = (ip->ihl) * 4;
 
     // Vérification que c'est bien un paquet TCP
-    if (ip->protocol != IPPROTO_TCP) {
+    if (ip->protocol != IPPROTO_TCP)
+    {
         return;
     }
 
@@ -47,7 +50,8 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
     // Vérification que c'est bien un paquet HTTP (port 80 ou 8080)
     uint16_t src_port = ntohs(tcp->th_sport);
     uint16_t dst_port = ntohs(tcp->th_dport);
-    if (src_port != 80 && src_port != 8080 && dst_port != 80 && dst_port != 8080) {
+    if (src_port != 80 && src_port != 8080 && dst_port != 80 && dst_port != 8080)
+    {
         return;
     }
 
@@ -60,7 +64,8 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
     inet_ntop(AF_INET, &(ip->daddr), dst_ip, INET_ADDRSTRLEN);
 
     // Traitement des données HTTP
-    if (payload_len > 0) {
+    if (payload_len > 0)
+    {
         char *data = (char *)payload;
         char *end = data + payload_len;
         char *line_end;
@@ -71,18 +76,21 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
         char status_message[256] = {0};
 
         // Affichage des informations de base
-        printf("\n[%s] HTTP %s:%d -> %s:%d\n", 
+        printf("\n[%s] HTTP %s:%d -> %s:%d\n",
                time_str, src_ip, src_port, dst_ip, dst_port);
 
         // Vérifier si c'est une requête ou une réponse HTTP
-        if (strncmp(data, "HTTP/", 5) == 0) {
+        if (strncmp(data, "HTTP/", 5) == 0)
+        {
             // C'est une réponse HTTP
             sscanf(data, "%s %d %[^\r\n]", version, &status_code, status_message);
             printf("=== HTTP Response ===\n");
             printf("Version: %s\n", version);
             printf("Status Code: %d\n", status_code);
             printf("Status Message: %s\n", status_message);
-        } else {
+        }
+        else
+        {
             // C'est une requête HTTP
             sscanf(data, "%s %s %s", method, path, version);
             printf("=== HTTP Request ===\n");
@@ -94,13 +102,17 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
         // Analyser les en-têtes
         printf("\nHeaders:\n");
         char *current = strstr(data, "\r\n");
-        if (current) {
+        if (current)
+        {
             current += 2; // Passer les \r\n
-            while (current < end) {
+            while (current < end)
+            {
                 line_end = strstr(current, "\r\n");
-                if (!line_end) break;
-                
-                if (line_end == current) {
+                if (!line_end)
+                    break;
+
+                if (line_end == current)
+                {
                     // Fin des en-têtes
                     break;
                 }
@@ -112,7 +124,8 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
         }
 
         // Afficher le corps si présent
-        if (current && current < end) {
+        if (current && current < end)
+        {
             printf("\nBody:\n");
             printf("%.*s\n", (int)(end - current), current);
         }

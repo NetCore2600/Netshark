@@ -64,6 +64,18 @@ typedef struct _arp_header {
     unsigned char ar_tip[4];  // Adresse IP cible
 } arp_header;
 
+typedef struct arp_packet {
+    char src_ip[INET_ADDRSTRLEN];
+    char dst_ip[INET_ADDRSTRLEN];
+    char src_mac[18];
+    char dst_mac[18];
+    uint16_t operation;
+    uint16_t hardware_type;
+    uint8_t hardware_size;
+    uint8_t protocol_size;
+    uint16_t protocol_type;
+} arp_packet;
+
 // FTP
 // Structure pour les commandes FTP
 typedef struct {

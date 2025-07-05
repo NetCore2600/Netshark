@@ -1,10 +1,11 @@
-#include "handler.h"
+#include "protocol.h"
 #include "netshark.h"
 #include "parser.h"
 
-void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
+{
     (void)args; // Pour éviter le warning du paramètre non utilisé
-    
+
     eth_header *eth;
     ip_header *ip;
     udp_header *udp;
@@ -16,7 +17,8 @@ void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     eth = (eth_header *)packet;
 
     // Vérifier si c'est un paquet IP
-    if (ntohs(eth->ether_type) != ETHERTYPE_IP) {
+    if (ntohs(eth->ether_type) != ETHERTYPE_IP)
+    {
         return;
     }
 
@@ -25,7 +27,8 @@ void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     size_ip = (ip->ip_vhl & 0x0f) * 4;
 
     // Vérifier si c'est un paquet UDP
-    if (ip->ip_p != IPPROTO_UDP) {
+    if (ip->ip_p != IPPROTO_UDP)
+    {
         return;
     }
 

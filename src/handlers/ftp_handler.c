@@ -1,10 +1,11 @@
-#include "handler.h"
+#include "protocol.h"
 #include "netshark.h"
 #include "parser.h"
 
-void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
+{
     (void)args;
-    
+
     struct ether_header *eth;
     struct iphdr *ip;
     tcp_header *tcp;
@@ -25,9 +26,10 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
 
     // Analyse de l'en-tête Ethernet
     eth = (struct ether_header *)packet;
-    
+
     // Vérification que c'est bien un paquet IP
-    if (ntohs(eth->ether_type) != ETHERTYPE_IP) {
+    if (ntohs(eth->ether_type) != ETHERTYPE_IP)
+    {
         return;
     }
 
@@ -36,7 +38,8 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     ip_header_len = (ip->ihl) * 4;
 
     // Vérification que c'est bien un paquet TCP
-    if (ip->protocol != IPPROTO_TCP) {
+    if (ip->protocol != IPPROTO_TCP)
+    {
         return;
     }
 
@@ -45,7 +48,8 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     tcp_header_len = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
 
     // Vérification que c'est bien un paquet FTP (port 21)
-    if (ntohs(tcp->th_sport) != 21 && ntohs(tcp->th_dport) != 21) {
+    if (ntohs(tcp->th_sport) != 21 && ntohs(tcp->th_dport) != 21)
+    {
         return;
     }
 
@@ -59,13 +63,13 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
 
     // Affichage des informations de base
     printf("\n[%s] ", time_str);
-    printf("FTP %s:%d -> %s:%d\n", 
+    printf("FTP %s:%d -> %s:%d\n",
            src_ip, ntohs(tcp->th_sport),
            dst_ip, ntohs(tcp->th_dport));
 
     // Traitement des données FTP
-    if (payload_len > 0) {
+    if (payload_len > 0)
+    {
         parse_ftp_packet(payload, payload_len);
     }
 }
-

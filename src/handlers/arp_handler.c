@@ -1,11 +1,12 @@
-#include "handler.h"
+#include "protocol.h"
 #include "netshark.h"
 #include "parser.h"
 
-void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
+{
 
     (void)args; // Pour éviter le warning du paramètre non utilisé
-    
+
     eth_header *eth;
     arp_header *arp;
     char src_ip[INET_ADDRSTRLEN];
@@ -17,7 +18,8 @@ void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     eth = (eth_header *)packet;
 
     // Vérifier si c'est un paquet ARP
-    if (ntohs(eth->ether_type) != ETHERTYPE_ARP) {
+    if (ntohs(eth->ether_type) != ETHERTYPE_ARP)
+    {
         return;
     }
 
@@ -32,7 +34,7 @@ void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     snprintf(src_mac, sizeof(src_mac), "%02x:%02x:%02x:%02x:%02x:%02x",
              arp->ar_sha[0], arp->ar_sha[1], arp->ar_sha[2],
              arp->ar_sha[3], arp->ar_sha[4], arp->ar_sha[5]);
-    
+
     snprintf(dst_mac, sizeof(dst_mac), "%02x:%02x:%02x:%02x:%02x:%02x",
              arp->ar_tha[0], arp->ar_tha[1], arp->ar_tha[2],
              arp->ar_tha[3], arp->ar_tha[4], arp->ar_tha[5]);

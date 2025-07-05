@@ -1,17 +1,18 @@
 ### NETSHARK 2600
+
 ```
-███╗   ██╗███████╗████████╗███████╗██╗  ██╗ █████╗ ██████╗ ██╗  ██╗    ██████╗  ██████╗  ██████╗  ██████╗ 
+███╗   ██╗███████╗████████╗███████╗██╗  ██╗ █████╗ ██████╗ ██╗  ██╗    ██████╗  ██████╗  ██████╗  ██████╗
 ████╗  ██║██╔════╝╚══██╔══╝██╔════╝██║  ██║██╔══██╗██╔══██╗██║ ██╔╝    ╚════██╗██╔════╝ ██╔═████╗██╔═████╗
 ██╔██╗ ██║█████╗     ██║   ███████╗███████║███████║██████╔╝█████╔╝      █████╔╝███████╗ ██║██╔██║██║██╔██║
 ██║╚██╗██║██╔══╝     ██║   ╚════██║██╔══██║██╔══██║██╔══██╗██╔═██╗     ██╔═══╝ ██╔═══██╗████╔╝██║████╔╝██║
 ██║ ╚████║███████╗   ██║   ███████║██║  ██║██║  ██║██║  ██║██║  ██╗    ███████╗╚██████╔╝╚██████╔╝╚██████╔╝
-╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚══════╝ ╚═════╝  ╚═════╝  ╚═════╝ 
+╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚══════╝ ╚═════╝  ╚═════╝  ╚═════╝
 ```
-
 
 ### Installation
 
 1. **Install Dependencies**
+
    - Install the PCAP development library:
      ```bash
      sudo apt-get install libpcap-dev  # For Debian/Ubuntu
@@ -19,12 +20,14 @@
      ```
 
 2. **Clone the Repository**
+
    ```bash
    git clone https://github.com/NetCore2600/Netshark.git
    cd netshark
    ```
 
 3. **Build the Project**
+
    ```bash
    make
    ```
@@ -36,14 +39,14 @@
 
 Note: The program requires root privileges to capture network packets. Run it with `sudo` if needed.
 
-
-
 ### Architecture
+
 ![Netshark](img/image.png)
 
 Netshark is a network packet analyzer built with a modular and layered architecture. Here's how the components work together:
 
 1. **Project Structure**
+
    ```
    netshark/
    ├── src/           # Source code
@@ -52,20 +55,23 @@ Netshark is a network packet analyzer built with a modular and layered architect
    │   └── handler.c  # Packet handling logic
    ├── include/       # Header files
    │   ├── netshark.h # Main application interface
-   │   ├── handler.h  # Packet handler interface
+   │   ├── protocol.h  # Packet handler interface
    │   └── parser.h   # Argument parser interface
    ├── build/         # Compiled objects and binaries
    └── Makefile       # Build configuration
    ```
 
 2. **Core Components**
+
    - **Main Application** (`main.c`)
+
      - Entry point of the program
      - Handles command-line arguments
      - Initializes the application
      - Manages the main event loop
 
    - **Packet Handler** (`handler.c`)
+
      - Processes captured network packets
      - Analyzes TCP/IP headers
      - Implements packet filtering
@@ -77,6 +83,7 @@ Netshark is a network packet analyzer built with a modular and layered architect
      - Manages resource allocation
 
 3. **Data Flow**
+
    1. User inputs interface and filter parameters
    2. Main initializes the application
    3. Packet handler captures network traffic
