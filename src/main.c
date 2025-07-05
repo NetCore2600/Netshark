@@ -7,7 +7,6 @@
 */
 
 #include "netshark.h"
-#include "protocol.h"
 
 int DEBUG_MODE = 0;
 

@@ -1,12 +1,13 @@
-#include "protocol.h"
 #include "netshark.h"
-#include "parser.h"
+#include "udp.h"
+#include "ip.h"
+#include "ethernet.h"
 
 void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
 {
     (void)args; // Pour éviter le warning du paramètre non utilisé
 
-    eth_header *eth;
+    ether_header *eth;
     ip_header *ip;
     udp_header *udp;
     int size_ip;
@@ -14,7 +15,7 @@ void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     char dst_ip[INET_ADDRSTRLEN];
 
     // Pointeur vers l'en-tête Ethernet
-    eth = (eth_header *)packet;
+    eth = (ether_header *)packet;
 
     // Vérifier si c'est un paquet IP
     if (ntohs(eth->ether_type) != ETHERTYPE_IP)
@@ -23,7 +24,7 @@ void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête IP
-    ip = (ip_header *)(packet + sizeof(eth_header));
+    ip = (ip_header *)(packet + sizeof(ether_header));
     size_ip = (ip->ip_vhl & 0x0f) * 4;
 
     // Vérifier si c'est un paquet UDP
@@ -33,7 +34,7 @@ void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête UDP
-    udp = (udp_header *)(packet + sizeof(eth_header) + size_ip);
+    udp = (udp_header *)(packet + sizeof(ether_header) + size_ip);
 
     // Convertir les adresses IP en chaînes
     inet_ntop(AF_INET, &(ip->ip_src), src_ip, INET_ADDRSTRLEN);

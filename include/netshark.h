@@ -5,12 +5,7 @@
 #include <pcap.h>
 #include <string.h>
 #include <stdlib.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <time.h>
-#include <net/ethernet.h>
-#include <netinet/tcp.h>
-#include <netinet/ip.h>
 #include <sys/types.h>
 
 
@@ -46,25 +41,13 @@ typedef struct  NetShark {
     bpf_u_int32 net;
 }               NetShark;
 
-// Structures pour les en-têtes
-typedef struct _eth_header {
-    unsigned char ether_dhost[6];
-    unsigned char ether_shost[6];
-    unsigned short ether_type;
-}              eth_header;
-
-typedef struct  _ip_header {
-    unsigned char ip_vhl;
-    unsigned char ip_tos;
-    unsigned short ip_len;
-    unsigned short ip_id;
-    unsigned short ip_off;
-    unsigned char ip_ttl;
-    unsigned char ip_p;
-    unsigned short ip_sum;
-    struct in_addr ip_src;
-    struct in_addr ip_dst;
-}               ip_header;
+typedef struct {
+    void (*tcp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*udp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*arp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*ftp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*http)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+} HandlerPacket;
 
 
 

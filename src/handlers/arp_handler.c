@@ -1,13 +1,14 @@
-#include "protocol.h"
+#include "arp.h"
 #include "netshark.h"
-#include "parser.h"
+#include "ethernet.h"
 
 void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
 {
-
     (void)args; // Pour éviter le warning du paramètre non utilisé
 
-    eth_header *eth;
+    parse_arp_packet(packet, header->len);
+
+    ether_header *eth;
     arp_header *arp;
     char src_ip[INET_ADDRSTRLEN];
     char dst_ip[INET_ADDRSTRLEN];
@@ -15,7 +16,7 @@ void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     char dst_mac[18];
 
     // Pointeur vers l'en-tête Ethernet
-    eth = (eth_header *)packet;
+    eth = (ether_header *)packet;
 
     // Vérifier si c'est un paquet ARP
     if (ntohs(eth->ether_type) != ETHERTYPE_ARP)
@@ -24,7 +25,7 @@ void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête ARP
-    arp = (arp_header *)(packet + sizeof(eth_header));
+    arp = (arp_header *)(packet + sizeof(ether_header));
 
     // Convertir les adresses IP en chaînes
     inet_ntop(AF_INET, arp->ar_sip, src_ip, INET_ADDRSTRLEN);

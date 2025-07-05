@@ -56,7 +56,11 @@ Netshark is a network packet analyzer built with a modular and layered architect
    ├── include/       # Header files
    │   ├── netshark.h # Main application interface
    │   ├── protocol.h  # Packet handler interface
-   │   └── parser.h   # Argument parser interface
+   │   ├── tcp.h       # Argument tcp interface
+   │   ├── udp.h       # Argument udp interface
+   │   ├── arp.h       # Argument arp interface
+   │   ├── http.h      # Argument http interface
+   │   └── ftp.h       # Argument ftp interface
    ├── build/         # Compiled objects and binaries
    └── Makefile       # Build configuration
    ```

@@ -1,13 +1,13 @@
-#include "protocol.h"
-#include "netshark.h"
-#include "parser.h"
+#include "ethernet.h"
+#include "tcp.h"
+#include "ip.h"
 
 // Callback pour la capture
 void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
 {
     (void)args; // Just pass the warnings because its not used at all within the function
 
-    eth_header *eth;
+    ether_header *eth;
     ip_header *ip;
     tcp_header *tcp;
     char flag_str[20];
@@ -17,7 +17,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     char dst_ip[INET_ADDRSTRLEN];
 
     // Pointeur vers l'en-tête Ethernet
-    eth = (eth_header *)packet;
+    eth = (ether_header *)packet;
 
     // Vérifier si c'est un paquet IP
     if (ntohs(eth->ether_type) != ETHERTYPE_IP)
@@ -26,7 +26,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête IP
-    ip = (ip_header *)(packet + sizeof(eth_header));
+    ip = (ip_header *)(packet + sizeof(ether_header));
     size_ip = (ip->ip_vhl & 0x0f) * 4;
 
     // Vérifier si c'est un paquet TCP
@@ -36,7 +36,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     }
 
     // Pointeur vers l'en-tête TCP
-    tcp = (tcp_header *)(packet + sizeof(eth_header) + size_ip);
+    tcp = (tcp_header *)(packet + sizeof(ether_header) + size_ip);
     size_tcp = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
 
     // Convertir les adresses IP en chaînes
