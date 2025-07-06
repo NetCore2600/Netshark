@@ -8,8 +8,10 @@ BUILD_DIR = build
 BIN = netshark
 
 # Find all .c files recursively
-SRCS = $(shell find $(SRC_DIR) -name '*.c')
-OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
+SRC = $(addprefix $(SRC_DIR)/, main.c init.c) \
+	  $(addprefix $(SRC_DIR)/handlers/, arp_handler.c ftp_handler.c http_handler.c arp_handler.c tcp_handler.c udp_handler.c) \
+	  $(addprefix $(SRC_DIR)/parsers/, arp_parser.c ftp_parser.c http_parser.c arp_parser.c tcp_parser.c udp_parser.c)
+OBJ = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 
 
@@ -21,7 +23,7 @@ $(BUILD_DIR)/%.o: %.c
 # Default target
 all: $(BIN)
 
-$(BIN): $(OBJS)
+$(BIN): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ -lpcap
 
 # Clean up build artifacts
