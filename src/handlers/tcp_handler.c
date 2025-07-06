@@ -20,7 +20,7 @@ void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     eth = (ether_header *)packet;
 
     // Vérifier si c'est un paquet IP
-    if (ntohs(eth->ether_type) != ETHERTYPE_IP)
+    if (ntohs(eth->type_len) != ETHERTYPE_IPV4)
     {
         return;
     }

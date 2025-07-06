@@ -60,7 +60,8 @@ typedef struct {
 // /src/init.c
 void init(NetShark *n, Args args);
 
-
+// /src/utils.c
+void dump_hex_single_line(const uint8_t *buf, size_t len);
 
 
 
