@@ -102,3 +102,54 @@ Netshark is a network packet analyzer built with a modular and layered architect
    - Cross-platform compatibility
 
 The architecture is designed to be modular, making it easy to maintain and extend. Each component has a clear responsibility, and the code is organized to separate concerns between packet capture, processing, and display.
+
+
+## Layer 2
+
+1. **Ethernet format**
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                Destination MAC Address (6 bytes)              |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                Source MAC Address (6 bytes)                   |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |           EtherType / Length (2 bytes)                        |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                  Payload (e.g., ARP, IP, etc.)                |
+ ~                                                               ~
+ |                                                               |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                  FCS (4 bytes, CRC32, not always shown)       |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+2. 🧠 What does EtherType do?
+It tells the receiving host what protocol to use to interpret the payload.
+Think of it like a "label" for the contents.
+Full list: [IEEE EtherType Assignments](https://standards-oui.ieee.org/ethertype/eth.txt)
+
+<br>
+<br>
+
+## ARP
+RFC: https://datatracker.ietf.org/doc/html/rfc826
+
+<br>
+
+packet structure
+
+0          1          2         3         4
++----------+----------+---------+---------+
+|                  32 bits                |
+|-----------------------------------------|
+|   Hardware Type     |     Protocol Type |
+|-----------------------------------------|
+| Hardware | Protocol |     Operation     |
+| Length   | Length   | 1:Request 2:Reply |
+|-----------------------------------------|
+|        Sender Hardware Address          |
+|-----------------------------------------|
+|        Sender Protocol Address          |
+|-----------------------------------------|
+|        Target Hardware Address          |
+|-----------------------------------------|
+|        Target Protocol Address          |
++-----------------------------------------+
