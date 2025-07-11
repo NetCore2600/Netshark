@@ -25,7 +25,7 @@ void signal_handler(int sig) {
 void print_usage(const char *prog) {
     printf("Usage: %s -i interface [-f protocole]\n", prog);
     printf("Exemple: %s -i eth0 -f tcp\n", prog);
-    printf("Protocole: tcp, udp, all (défaut: all)\n");
+    printf("Protocole: tcp, udp, http, all (défaut: all)\n");
 }
 
 void parse_args(int argc, char **argv, char **interface, char **filter) {
@@ -55,7 +55,16 @@ void print_packet(const unsigned char *buffer, int size) {
     printf("IP %s -> %s ", src, dst);
     if (iph->protocol == IPPROTO_TCP) {
         const struct tcphdr *tcp = (const struct tcphdr *)(buffer + sizeof(struct ethhdr) + iph->ihl*4);
-        printf("TCP %d -> %d", ntohs(tcp->source), ntohs(tcp->dest));
+        int src_port = ntohs(tcp->source);
+        int dst_port = ntohs(tcp->dest);
+        printf("TCP %d -> %d", src_port, dst_port);
+        
+        // Détecter HTTP/HTTPS
+        if (src_port == 80 || dst_port == 80) {
+            printf(" [HTTP]");
+        } else if (src_port == 443 || dst_port == 443) {
+            printf(" [HTTPS]");
+        }
     } else if (iph->protocol == IPPROTO_UDP) {
         const struct udphdr *udp = (const struct udphdr *)(buffer + sizeof(struct ethhdr) + iph->ihl*4);
         printf("UDP %d -> %d", ntohs(udp->source), ntohs(udp->dest));
@@ -106,9 +115,20 @@ int main(int argc, char **argv) {
         const struct ethhdr *eth = (const struct ethhdr *)buffer;
         if (ntohs(eth->h_proto) != ETH_P_IP) continue;
         const struct iphdr *iph = (const struct iphdr *)(buffer + sizeof(struct ethhdr));
-        if ((strcmp(filter, "tcp") == 0 && iph->protocol == IPPROTO_TCP) ||
-            (strcmp(filter, "udp") == 0 && iph->protocol == IPPROTO_UDP) ||
-            (strcmp(filter, "all") == 0)) {
+        
+        // Filtrage par protocole
+        if (strcmp(filter, "tcp") == 0 && iph->protocol == IPPROTO_TCP) {
+            print_packet(buffer, size);
+        } else if (strcmp(filter, "udp") == 0 && iph->protocol == IPPROTO_UDP) {
+            print_packet(buffer, size);
+        } else if (strcmp(filter, "http") == 0 && iph->protocol == IPPROTO_TCP) {
+            const struct tcphdr *tcp = (const struct tcphdr *)(buffer + sizeof(struct ethhdr) + iph->ihl*4);
+            int src_port = ntohs(tcp->source);
+            int dst_port = ntohs(tcp->dest);
+            if (src_port == 80 || dst_port == 80 || src_port == 443 || dst_port == 443) {
+                print_packet(buffer, size);
+            }
+        } else if (strcmp(filter, "all") == 0) {
             print_packet(buffer, size);
         }
     }
