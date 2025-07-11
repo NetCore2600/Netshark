@@ -2,7 +2,7 @@
 #include "netshark.h"
 #include "parser.h"
 
-void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void http_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet) {
     (void)args;
     
     struct ether_header *eth;

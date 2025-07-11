@@ -1,31 +1,21 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude
+CFLAGS = -Wall -Wextra
 
-# Directories
-SRC_DIR = src
-BUILD_DIR = build
+# Target binary
 BIN = netshark
 
-# Find all .c files recursively
-SRCS = $(shell find $(SRC_DIR) -name '*.c')
-OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
-
-
-
-# Create necessary folders for object files
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+# Source file
+SRC = src/main.c
 
 # Default target
 all: $(BIN)
 
-$(BIN): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@ -lpcap
+$(BIN): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(BIN)
 
 # Clean up build artifacts
 clean:
-	rm -rf $(BUILD_DIR) $(BIN)
+	rm -f $(BIN)
 
 .PHONY: all clean

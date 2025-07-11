@@ -2,7 +2,7 @@
 #include "netshark.h"
 #include "parser.h"
 
-void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void arp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet) {
 
     (void)args; // Pour éviter le warning du paramètre non utilisé
     

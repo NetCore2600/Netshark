@@ -3,7 +3,7 @@
 #include "parser.h"
 
 // Callback pour la capture
-void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
+void tcp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet) {
     (void)args; // Just pass the warnings because its not used at all within the function
 
     eth_header *eth;

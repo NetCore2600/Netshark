@@ -1,0 +1,86 @@
+.\" Copyright (c) 1994, 1996, 1997
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that: (1) source code distributions
+.\" retain the above copyright notice and this paragraph in its entirety, (2)
+.\" distributions including binary code include the above copyright notice and
+.\" this paragraph in its entirety in the documentation or other materials
+.\" provided with the distribution, and (3) all advertising materials mentioning
+.\" features or use of this software display the following acknowledgement:
+.\" ``This product includes software developed by the University of California,
+.\" Lawrence Berkeley Laboratory and its contributors.'' Neither the name of
+.\" the University nor the names of its contributors may be used to endorse
+.\" or promote products derived from this software without specific prior
+.\" written permission.
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+.\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+.\"
+.TH NETSHARK_LOOKUPDEV 3NETSHARK "30 November 2023"
+.SH NAME
+netshark_lookupdev \- find the default device on which to capture
+.SH SYNOPSIS
+.nf
+.ft B
+#include <netshark/netshark.h>
+.ft
+.LP
+.nf
+.ft B
+char errbuf[NETSHARK_ERRBUF_SIZE];
+.ft
+.LP
+.ft B
+[DEPRECATED] char *netshark_lookupdev(char *errbuf);
+.ft
+.fi
+.SH DESCRIPTION
+.B This interface is obsoleted by
+.BR netshark_findalldevs (3NETSHARK).
+To find a default device on which to capture, call
+.BR netshark_findalldevs ()
+and, if the list it returns is not empty, use the first device in the
+list.  (If the list is empty, there are no devices on which capture is
+possible.)
+.I errbuf
+is a buffer large enough to hold at least
+.B NETSHARK_ERRBUF_SIZE
+chars.
+.LP
+.B If
+.BR netshark_init (3NETSHARK)
+.B has been called, this interface always returns
+.BR NULL .
+.LP
+.BR netshark_lookupdev ()
+returns a pointer to a string giving the name of a network device
+suitable for use with
+.BR netshark_create (3NETSHARK)
+and
+.BR \%netshark_activate (3NETSHARK),
+or with
+.BR netshark_open_live (3NETSHARK),
+and with
+.BR netshark_lookupnet (3NETSHARK).
+If there is an error,
+or if
+.BR netshark_init (3NETSHARK)
+has been called,
+.B NULL
+is returned and
+.I errbuf
+is filled in with an appropriate error message.
+.SH SEE ALSO
+.BR netshark (3NETSHARK)
+.SH BUGS
+The pointer returned by
+.BR netshark_lookupdev ()
+points to a static buffer; subsequent calls to
+.BR netshark_lookupdev ()
+in the same thread, or calls to
+.BR netshark_lookupdev ()
+in another thread, may overwrite that buffer.
+.LP
+In WinPcap and Nnetshark, this function may return a UTF-16 string rather
+than an ASCII or UTF-8 string.

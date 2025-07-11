@@ -1,0 +1,106 @@
+.\" Copyright (c) 1994, 1996, 1997
+.\"	The Regents of the University of California.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that: (1) source code distributions
+.\" retain the above copyright notice and this paragraph in its entirety, (2)
+.\" distributions including binary code include the above copyright notice and
+.\" this paragraph in its entirety in the documentation or other materials
+.\" provided with the distribution, and (3) all advertising materials mentioning
+.\" features or use of this software display the following acknowledgement:
+.\" ``This product includes software developed by the University of California,
+.\" Lawrence Berkeley Laboratory and its contributors.'' Neither the name of
+.\" the University nor the names of its contributors may be used to endorse
+.\" or promote products derived from this software without specific prior
+.\" written permission.
+.\" THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+.\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+.\"
+.TH NETSHARK_INJECT 3NETSHARK "23 November 2024"
+.SH NAME
+netshark_inject, netshark_sendpacket \- transmit a packet
+.SH SYNOPSIS
+.nf
+.ft B
+#include <netshark/netshark.h>
+.ft
+.LP
+.ft B
+int netshark_inject(netshark_t *p, const void *buf, size_t size);
+int netshark_sendpacket(netshark_t *p, const u_char *buf, int size);
+.ft
+.fi
+.SH DESCRIPTION
+.BR netshark_inject ()
+sends a raw packet through the network interface;
+.I buf
+points to the data of the packet, including the link-layer header, and
+.I size
+is the number of bytes in the packet.
+.PP
+Note that, even if you successfully open the network interface, you
+might not have permission to send packets on it, or it might not support
+sending packets; as
+.BR netshark_open_live (3NETSHARK)
+doesn't have a flag to indicate whether to open for capturing, sending,
+or capturing and sending, you cannot request an open that supports
+sending and be notified at open time whether sending will be possible.
+The same limitation applies to
+.BR \%netshark_create (3NETSHARK)
+and
+.BR \%netshark_activate (3NETSHARK).
+Note also that some devices might not support sending packets.
+.PP
+Note that, on some platforms, the link-layer header of the packet that's
+sent might not be the same as the link-layer header of the packet
+supplied to
+.BR netshark_inject (),
+as the source link-layer address, if the header contains such an
+address, might be changed to be the address assigned to the interface on
+which the packet it sent, if the platform doesn't support sending
+completely raw and unchanged packets.  Even worse, some drivers on some
+platforms might change the link-layer type field to whatever value
+libnetshark used when attaching to the device, even on platforms that
+.I do
+nominally support sending completely raw and unchanged packets.
+.PP
+.BR netshark_sendpacket ()
+is like
+.BR netshark_inject (),
+but it returns
+.B 0
+on success, rather than returning the number of bytes
+written.
+.RB ( netshark_inject ()
+comes from OpenBSD;
+.BR netshark_sendpacket ()
+comes from WinPcap/Nnetshark.  Both are provided for compatibility.)
+.SH RETURN VALUE
+.BR netshark_inject ()
+returns the number of bytes written on success,
+.B NETSHARK_ERROR_NOT_ACTIVATED
+if called on a capture handle that has been created but not activated, and
+.B NETSHARK_ERROR
+on other errors.
+.PP
+.BR netshark_sendpacket ()
+returns
+.B 0
+on success,
+.B NETSHARK_ERROR_NOT_ACTIVATED
+if called on a capture handle that has been created but not activated, and
+.B NETSHARK_ERROR
+on other errors.
+.PP
+If
+.B NETSHARK_ERROR
+is returned,
+.BR netshark_geterr (3NETSHARK)
+or
+.BR netshark_perror (3NETSHARK)
+may be called with
+.I p
+as an argument to fetch or display the error text.
+.SH SEE ALSO
+.BR netshark (3NETSHARK)

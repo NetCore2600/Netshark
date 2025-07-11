@@ -2,6 +2,7 @@
 #define HANDLER_H
 
 #include "netshark.h"
+#include "netshark_types.h"
 
 
 
@@ -21,11 +22,11 @@
 
 // HandlerPacket structure with void return functions
 typedef struct {
-    void (*tcp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-    void (*udp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-    void (*arp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-    void (*ftp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-    void (*http)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*tcp)(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
+    void (*udp)(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
+    void (*arp)(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
+    void (*ftp)(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
+    void (*http)(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 } HandlerPacket;
 
 
@@ -91,21 +92,21 @@ struct ftp_data {
 |__________________________________*/
 
 // /handlers/tcp_handler.c
-void tcp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+void tcp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 void get_tcp_flags(unsigned char flags, char *str);
 
 // /handlers/udp_handler.c
-void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+void udp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 
 
 // /handlers/arp_handler.c
-void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+void arp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 
 
 // /handlers/ftp_handler.c
-void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+void ftp_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 
-void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+void http_handler(unsigned char *args, const struct netshark_pkthdr *header, const unsigned char *packet);
 
 
 
