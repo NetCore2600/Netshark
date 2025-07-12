@@ -1,4 +1,5 @@
 #include "tcp.h"
+#include "ip.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -18,25 +19,27 @@ int parse_tcp_packet(const unsigned char *frame, size_t frame_len, tcp_packet *o
 
     memset(out, 0, sizeof(*out));
 
-    // Parse Ethernet header
-    int offset = parse_ethernet_frame(frame, frame_len, &out->ether);
-    if (offset < 0 || frame_len < offset + sizeof(ip_header)) {
-        fprintf(stderr, "Invalid Ethernet or IP header\n");
+    // 1. Parse Ethernet
+    int eth_offset = parse_ethernet_frame(frame, frame_len, &out->ether);
+    if (eth_offset < 0 || frame_len < eth_offset + sizeof(ip_header))
         return -1;
-    }
+    frame += eth_offset;
+    frame_len -= eth_offset;
     
-    frame += offset;
+    // 2. Parse IP header using helper
+    int ip_offset = parse_ip_header(frame, frame_len, &out->ip);
+    if (ip_offset < 0)
+        return -1;
+    frame += ip_offset;
+    frame_len -= ip_offset;
 
-    const ip_header *ip = (const ip_header *)(frame);
-    memcpy(&out->ip, ip, sizeof(ip_header));
-
-    if (ip->ip_p != IPPROTO_TCP) return -1;
-
-    int ip_hdr_len = (ip->ip_vhl & 0x0F) * 4;
-    if (frame_len < offset + ip_hdr_len + sizeof(tcp_header))
+    // 3. Sanity check
+    if (out->ip.protocol != IPPROTO_UDP)
+        return -1;
+    if (frame_len < sizeof(tcp_header))
         return -1;
 
-    const tcp_header *tcp = (const tcp_header *)(frame + ip_hdr_len);
+    const tcp_header *tcp = (const tcp_header *)(frame);
     int tcp_hdr_len = ((tcp->th_offx2 & 0xF0) >> 4) * 4;
 
     out->src_port  = ntohs(tcp->th_sport);
@@ -48,12 +51,12 @@ int parse_tcp_packet(const unsigned char *frame, size_t frame_len, tcp_packet *o
     out->checksum  = ntohs(tcp->th_sum);
     out->urg_ptr   = ntohs(tcp->th_urp);
     out->header_len = tcp_hdr_len;
-    out->data_len = ntohs(ip->ip_len) - ip_hdr_len - tcp_hdr_len;
+    out->data_len = out->data_len;
 
-    inet_ntop(AF_INET, &ip->ip_src, out->src_ip, sizeof(out->src_ip));
-    inet_ntop(AF_INET, &ip->ip_dst, out->dst_ip, sizeof(out->dst_ip));
-
+    inet_ntop(AF_INET, &out->ip.src, out->src_ip, sizeof(out->src_ip));
+    inet_ntop(AF_INET, &out->ip.dst, out->dst_ip, sizeof(out->dst_ip));
     get_tcp_flags(out->flags, out->flags_str);
+
     return 0;
 }
 
