@@ -56,5 +56,6 @@ typedef struct _ip_header {
                                 //   - The intended recipient
 } ip_header;
 
+int parse_ip_header(const unsigned char *packet, size_t packet_len, ip_header *out);
 
 #endif // NETCORE_H

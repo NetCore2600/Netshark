@@ -37,7 +37,7 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
 
     // Analyse de l'en-tête IP
     ip = (ip_header *)(packet + sizeof(ether_header));
-    ip_header_len = (ip->ip_vhl & 0x0F) * 4;
+    ip_header_len = (ip & 0x0F) * 4;
 
     // Vérification que c'est bien un paquet TCP
     if (ip->ip_p != IPPROTO_TCP)
@@ -60,8 +60,8 @@ void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const un
     payload_len = header->len - (sizeof(ether_header) + ip_header_len + tcp_header_len);
 
     // Conversion des adresses IP
-    inet_ntop(AF_INET, &(ip->ip_src), src_ip, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(ip->ip_dst), dst_ip, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(ip->src), src_ip, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(ip->dst), dst_ip, INET_ADDRSTRLEN);
 
     // Affichage des informations de base
     printf("\n[%s] ", time_str);
