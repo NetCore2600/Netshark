@@ -1,72 +1,87 @@
-#include "netshark.h"
 #include "udp.h"
-#include "ip.h"
-#include "ethernet.h"
+#include <string.h>
+#include <stdio.h>
 
-void udp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
-{
-    (void)args; // Pour éviter le warning du paramètre non utilisé
+int parse_udp_packet(const unsigned char *frame, size_t frame_len, udp_packet *out) {
+    if (!frame || !out) return -1;
 
-    ether_header *eth;
-    ip_header *ip;
-    udp_header *udp;
-    int size_ip;
-    char src_ip[INET_ADDRSTRLEN];
-    char dst_ip[INET_ADDRSTRLEN];
+    memset(out, 0, sizeof(*out));
 
-    // Pointeur vers l'en-tête Ethernet
-    eth = (ether_header *)packet;
+    // 1. Parse Ethernet
+    int eth_offset = parse_ethernet_frame(frame, frame_len, &out->ether);
+    if (eth_offset < 0 || frame_len < eth_offset + sizeof(ip_header))
+        return -1;
+    frame += eth_offset;
+    frame_len -= eth_offset;
+    
+    // 2. Parse IP header using helper
+    int ip_offset = parse_ip_header(frame, frame_len, &out->ip);
+    if (ip_offset < 0)
+        return -1;
+    frame += ip_offset;
+    frame_len -= ip_offset;
 
-    // Vérifier si c'est un paquet IP
-    if (ntohs(eth->type_len) != ETHERTYPE_IPV4)
-    {
-        return;
-    }
+    // 3. Sanity check
+    if (out->ip.protocol != IPPROTO_UDP)
+        return -1;
+    if (frame_len < sizeof(udp_header))
+        return -1;
 
-    // Pointeur vers l'en-tête IP
-    ip = (ip_header *)(packet + sizeof(ether_header));
-    size_ip = (ip->ip_vhl & 0x0f) * 4;
+    // 4. Parse UDP header
+    const udp_header *udp = (const udp_header *)(frame);
+    out->src_port = ntohs(udp->uh_sport);
+    out->dst_port = ntohs(udp->uh_dport);
+    out->length   = ntohs(udp->uh_ulen);
+    out->checksum = ntohs(udp->uh_sum);
+    out->data_len = out->length - sizeof(udp_header);
 
-    // Vérifier si c'est un paquet UDP
-    if (ip->ip_p != IPPROTO_UDP)
-    {
-        return;
-    }
+    // 6. Detect UDP-based service
+    if (out->src_port == 53 || out->dst_port == 53)
+        strcpy(out->service_str, "DNS");
+    else if (out->src_port == 67 || out->dst_port == 67 || out->src_port == 68 || out->dst_port == 68)
+        strcpy(out->service_str, "DHCP");
+    else if (out->src_port == 123 || out->dst_port == 123)
+        strcpy(out->service_str, "NTP");
+    else if (out->src_port == 161 || out->dst_port == 161 || out->src_port == 162 || out->dst_port == 162)
+        strcpy(out->service_str, "SNMP");
+    else
+        strcpy(out->service_str, "Unknown");
 
-    // Pointeur vers l'en-tête UDP
-    udp = (udp_header *)(packet + sizeof(ether_header) + size_ip);
+    return 0;
+}
 
-    // Convertir les adresses IP en chaînes
-    inet_ntop(AF_INET, &(ip->ip_src), src_ip, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(ip->ip_dst), dst_ip, INET_ADDRSTRLEN);
 
-    // Afficher les informations détaillées du paquet UDP
-    printf("\n=== UDP Packet Analysis ===\n");
-    printf("Source IP: %s\n", src_ip);
-    printf("Destination IP: %s\n", dst_ip);
-    printf("Source Port: %u\n", ntohs(udp->uh_sport));
-    printf("Destination Port: %u\n", ntohs(udp->uh_dport));
-    printf("Length: %u bytes\n", ntohs(udp->uh_ulen));
-    printf("Checksum: 0x%04x\n", ntohs(udp->uh_sum));
-    printf("Data Length: %zu bytes\n", ntohs(udp->uh_ulen) - sizeof(udp_header));
-    printf("Total Packet Length: %u bytes\n", header->len);
+void print_udp_packet(const unsigned char *packet, uint32_t wire_len, const udp_packet *p) {
+    puts("\n=== UDP Packet (Parsed) ===");
 
-    // Identification des services courants
-    printf("\nService Analysis:\n");
-    uint16_t src_port = ntohs(udp->uh_sport);
-    uint16_t dst_port = ntohs(udp->uh_dport);
+    printf("Src MAC        : %s\n", p->ether.src_mac);
+    printf("Dst MAC        : %s\n", p->ether.dst_mac);
+    printf("Ethertype      : 0x%04x\n", ntohs(p->ether.ethertype));
+    puts("\n");
+    printf("Source IP      : %s\n", p->ip.src);
+    printf("Destination IP : %s\n", p->ip.dst);
+    puts("\n");
+    printf("Source Port    : %u\n", p->src_port);
+    printf("Destination Port: %u\n", p->dst_port);
+    printf("Length Field   : %u bytes\n", p->length);
+    printf("Data Length    : %u bytes\n", p->data_len);
+    printf("Checksum       : 0x%04x\n", p->checksum);
+    printf("Service        : %s\n", p->service_str);
+    puts("\n");
+    printf("Total on wire  : %u bytes\n", wire_len);
+    printf("Raw Bytes      : "); dump_hex_single_line(packet, wire_len);
 
-    if (src_port == 53 || dst_port == 53)
-        printf("- DNS Service detected\n");
-    if (src_port == 67 || dst_port == 67 || src_port == 68 || dst_port == 68)
-        printf("- DHCP Service detected\n");
-    if (src_port == 123 || dst_port == 123)
-        printf("- NTP Service detected\n");
-    if (src_port == 161 || dst_port == 161 || src_port == 162 || dst_port == 162)
-        printf("- SNMP Service detected\n");
+    puts("===========================");
+}
 
-    printf("==========================\n");
+void udp_handler(
+    unsigned char *user,
+    const struct pcap_pkthdr *header,
+    const unsigned char *packet
+) {
+    (void)user;
 
-    // Appeler le parser UDP pour un traitement plus détaillé
-    parse_udp_packet((const unsigned char *)udp, ntohs(udp->uh_ulen));
+    udp_packet pkt;
+    if (parse_udp_packet(packet, header->len, &pkt) == 0)
+        print_udp_packet(packet, header->len, &pkt);
 }

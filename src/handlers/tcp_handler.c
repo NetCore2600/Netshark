@@ -66,20 +66,20 @@ void print_tcp_packet(const unsigned char *packet, uint32_t wire_len, const tcp_
     printf("Src MAC        : %s\n", p->ether.src_mac);
     printf("Dst MAC        : %s\n", p->ether.dst_mac);
     printf("Ethertype      : 0x%04x\n", ntohs(p->ether.ethertype));
-
+    puts("\n");
     printf("Source IP      : %s\n", p->src_ip);
     printf("Destination IP : %s\n", p->dst_ip);
-    printf("Source Port    : %u\n", p->src_port);
+    puts("\n");
+    printf("Source Port     : %u\n", p->src_port);
     printf("Destination Port: %u\n", p->dst_port);
-
-    printf("Seq Number     : %u\n", p->seq_num);
-    printf("Ack Number     : %u\n", p->ack_num);
-    printf("Flags          : %s\n", p->flags_str);
-    printf("Window Size    : %u\n", p->window);
-    printf("Header Length  : %u bytes\n", p->header_len);
-    printf("Data Length    : %u bytes\n", p->data_len);
-    printf("Total on wire  : %u bytes\n", wire_len);
-    printf("Raw Bytes      : "); dump_hex_single_line(packet, wire_len); printf("\n");
+    printf("Seq Number      : %u\n", p->seq_num);
+    printf("Ack Number      : %u\n", p->ack_num);
+    printf("Flags           : %s\n", p->flags_str);
+    printf("Window Size     : %u\n", p->window);
+    printf("Header Length   : %u bytes\n", p->header_len);
+    printf("Data Length     : %u bytes\n", p->data_len);
+    printf("Total on wire   : %u bytes\n", wire_len);
+    printf("Raw Bytes       : "); dump_hex_single_line(packet, wire_len);
 
     puts("===========================");
 }
