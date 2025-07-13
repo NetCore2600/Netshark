@@ -4,8 +4,7 @@
 #include <arpa/inet.h>
 
 typedef struct _ip_info {
-    uint8_t  version;
-    uint8_t  header_len;
+    uint8_t  vhl;         // Version (4 bits) | Header Length (4 bits)
     uint8_t  tos;
     uint16_t total_len;
     uint16_t id;
@@ -13,9 +12,11 @@ typedef struct _ip_info {
     uint8_t  ttl;
     uint8_t  protocol;
     uint16_t checksum;
-    char     src_ip[INET_ADDRSTRLEN];
-    char     dst_ip[INET_ADDRSTRLEN];
+    struct in_addr src;
+    struct in_addr dst;
 } ip_info;
+
+
 
 typedef struct _ip_header {
     unsigned char version;      // Version (4 bits) + Header Length (4 bits)
@@ -49,13 +50,11 @@ typedef struct _ip_header {
     unsigned short checksum;    // Header Checksum
                                 //   - Error-checking for the IP header only (not data)
 
-    struct in_addr src;         // Source IP Address (32-bit IPv4 address)
-                                //   - The sender's address
-
-    struct in_addr dst;         // Destination IP Address (32-bit IPv4 address)
                                 //   - The intended recipient
+    char src[INET_ADDRSTRLEN];
+    char dst[INET_ADDRSTRLEN];
 } ip_header;
 
-int parse_ip_header(const unsigned char *packet, size_t packet_len, ip_header *out);
+int parse_ip_header(const unsigned char *, size_t, ip_header *);
 
 #endif // NETCORE_H

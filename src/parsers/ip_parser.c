@@ -11,23 +11,19 @@ static void ip_to_str(const struct in_addr *addr, char *dst, size_t dst_len) {
     inet_ntop(AF_INET, addr, dst, dst_len);
 }
 
-/* Output structure for parsed IP data */
-
-
-
 /* Parses the IP header */
-int parse_ip_header(const unsigned char *packet, size_t packet_len, ip_header *out) {
-    if (!packet || !out) return -1;
-    if (packet_len < sizeof(ip_info)) return -1;
+int parse_ip_header(const unsigned char *frame, size_t frame_len, ip_header *out) {
+    if (!frame || !out) return -1;
+    if (frame_len < sizeof(ip_info)) return -1;
 
-    const ip_info *iph = (const ip_info *)(const void *)packet;
+    const ip_info *iph = (const ip_info *)(const void *)frame;
 
     memset(out, 0, sizeof *out);
 
-    out->version     = iph->version >> 4;
-    out->header_len  = (iph->version & 0x0F) * 4; // in bytes
+    out->version     = iph->vhl >> 4;
+    out->header_len  = (iph->vhl & 0x0F) * 4; // in bytes
 
-    if (packet_len < out->header_len) return -1; // truncated IP header
+    if (frame_len < out->header_len) return -1; // truncated IP header
 
     out->tos         = iph->tos;
     out->total_len   = ntohs(iph->total_len);
@@ -36,9 +32,8 @@ int parse_ip_header(const unsigned char *packet, size_t packet_len, ip_header *o
     out->ttl         = iph->ttl;
     out->protocol    = iph->protocol;
     out->checksum    = ntohs(iph->checksum);
-
-    ip_to_str(&iph->src_ip, out->src.s_addr, sizeof out->src.s_addr);
-    ip_to_str(&iph->dst_ip, out->dst.s_addr, sizeof out->src.s_addr);
+    ip_to_str(&iph->src, out->src, sizeof(out->src));
+    ip_to_str(&iph->dst, out->dst, sizeof(out->dst));
 
     return (int)out->header_len; // offset to next protocol layer (e.g., TCP)
 }

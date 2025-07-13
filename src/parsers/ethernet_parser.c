@@ -9,15 +9,15 @@ static void mac_to_str(const uint8_t mac[6], char *dst, size_t dstframe_len)
 }
 
 /* ---------------------------------------------------------------------- */
-int parse_ethernet_frame(
+int parse_ethernet_header(
     const unsigned char *frame,
     size_t              frame_len,
-    ether               *out
+    eth_header               *out
 ) {
     if (!frame || !out)                return -1;
     if (frame_len < ETH_MIN_FRAME)     return -1;   /* not enough for header */
 
-    const ether_header *eh = (const ether_header *)(const void *)frame;
+    const ether_info *eh = (const ether_info *)(const void *)frame;
 
     memset(out, 0, sizeof *out);
     mac_to_str(eh->dst, out->dst_mac, sizeof out->dst_mac);
@@ -51,5 +51,5 @@ int parse_ethernet_frame(
     }
 
     out->ethertype = et;
-    return (int)offset;                       /* offset to next layer */
+    return (int)ETH_MIN_FRAME;                       /* offset to next layer */
 }

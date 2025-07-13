@@ -104,7 +104,13 @@ Netshark is a network packet analyzer built with a modular and layered architect
 The architecture is designed to be modular, making it easy to maintain and extend. Each component has a clear responsibility, and the code is organized to separate concerns between packet capture, processing, and display.
 
 
-## Layer 2
+## Packets
+[ Ethernet (14 bytes) ]
+[ IP (20-60 bytes) ]
+[ TCP (20+ bytes) ]
+[ Payload ]
+
+## Network Layer
 
 1. **Ethernet format**
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -129,7 +135,7 @@ Full list: [IEEE EtherType Assignments](https://standards-oui.ieee.org/ethertype
 <br>
 <br>
 
-## ARP
+### ARP
 RFC: https://datatracker.ietf.org/doc/html/rfc826
 
 <br>
@@ -157,7 +163,7 @@ packet structure
 <br>
 <br>
 
-## Layer 3 
+## Internet Layer
 
 +------+ +-----+ +-----+     +-----+
 |Telnet| | FTP | | TFTP| ... | ... |
@@ -205,4 +211,21 @@ A summary of the contents of the internet header follows:
 |                    Options                    |    Padding    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+<br>
+<br>
 
+## Transport Layerz
+
+### TCP
+
+
+<br>
+<br>
+
+## Application Layer
+
+<br>
+
+### HTTP
+
+RFC: https://datatracker.ietf.org/doc/html/rfc7540

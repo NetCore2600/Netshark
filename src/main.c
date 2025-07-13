@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     printf("\nStarting packet capture on %s with filter: %s\n", args.dev, args.filter_exp);
     while (1)
     {
-        pcap_loop(app.handle, 10, app.handler, NULL);
+        pcap_loop(app.handle, 1, app.handler, NULL);
     }
 
     // Clean up

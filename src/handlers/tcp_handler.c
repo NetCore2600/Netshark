@@ -13,65 +13,56 @@ void get_tcp_flags(unsigned char flags, char *str) {
     if (flags & TH_URG)  strcat(str, "URG ");
 }
 
-int parse_tcp_packet(const unsigned char *frame, size_t frame_len, tcp_packet *out) {
+int parse_tcp_header(const unsigned char *frame, size_t frame_len, tcp_packet *out) {
     if (!frame || !out)
         return -1;
-
-    memset(out, 0, sizeof(*out));
-
-    // 1. Parse Ethernet
-    int eth_offset = parse_ethernet_frame(frame, frame_len, &out->ether);
-    if (eth_offset < 0 || frame_len < eth_offset + sizeof(ip_header))
+    if (out->ip.protocol != IPPROTO_TCP)
+    {
+        fprintf(stderr, "Error not TCP protocol => %d\n", out->ip.protocol);
         return -1;
-    frame += eth_offset;
-    frame_len -= eth_offset;
-    
-    // 2. Parse IP header using helper
-    int ip_offset = parse_ip_header(frame, frame_len, &out->ip);
-    if (ip_offset < 0)
-        return -1;
-    frame += ip_offset;
-    frame_len -= ip_offset;
-
-    // 3. Sanity check
-    if (out->ip.protocol != IPPROTO_UDP)
-        return -1;
+    }
     if (frame_len < sizeof(tcp_header))
         return -1;
 
-    const tcp_header *tcp = (const tcp_header *)(frame);
-    int tcp_hdr_len = ((tcp->th_offx2 & 0xF0) >> 4) * 4;
+    const tcp_header *tcp = (const tcp_header *)frame;
+    int tcp_hdr_len = ((tcp->offx2 & 0xF0) >> 4) * 4;
 
-    out->src_port  = ntohs(tcp->th_sport);
-    out->dst_port  = ntohs(tcp->th_dport);
-    out->seq_num   = ntohl(tcp->th_seq);
-    out->ack_num   = ntohl(tcp->th_ack);
-    out->flags     = tcp->th_flags;
-    out->window    = ntohs(tcp->th_win);
-    out->checksum  = ntohs(tcp->th_sum);
-    out->urg_ptr   = ntohs(tcp->th_urp);
+    if (frame_len < (size_t)tcp_hdr_len)
+        return -1;
+
+    out->src_port  = ntohs(tcp->sport);
+    out->dst_port  = ntohs(tcp->dport);
+    out->seq_num   = ntohl(tcp->seq);
+    out->ack_num   = ntohl(tcp->ack);
+    out->flags     = tcp->flags;
+    out->window    = ntohs(tcp->win);
+    out->checksum  = ntohs(tcp->sum);
+    out->urg_ptr   = ntohs(tcp->urp);
     out->header_len = tcp_hdr_len;
-    out->data_len = out->data_len;
 
-    inet_ntop(AF_INET, &out->ip.src, out->src_ip, sizeof(out->src_ip));
-    inet_ntop(AF_INET, &out->ip.dst, out->dst_ip, sizeof(out->dst_ip));
+    // Calculate data length from IP total length
+    int total_ip_len = out->ip.total_len;
+    out->data_len = total_ip_len - out->ip.header_len - tcp_hdr_len;
+
     get_tcp_flags(out->flags, out->flags_str);
 
-    return 0;
+    // Return total bytes parsed from Ethernet + IP + TCP headers
+    return tcp_hdr_len;
 }
 
-void print_tcp_packet(const unsigned char *packet, uint32_t wire_len, const tcp_packet *p) {
-    puts("\n=== TCP Packet (Parsed) ===");
 
-    printf("Src MAC        : %s\n", p->ether.src_mac);
-    printf("Dst MAC        : %s\n", p->ether.dst_mac);
-    printf("Ethertype      : 0x%04x\n", ntohs(p->ether.ethertype));
+void print_tcp_packet(const unsigned char *frame, uint32_t wire_len, const tcp_packet *p) {
+    puts("\n=== TCP Packet (Parsed) ===");
     puts("\n");
-    printf("Source IP      : %s\n", p->src_ip);
-    printf("Destination IP : %s\n", p->dst_ip);
+    printf("Src MAC         : %s\n", p->ether.src_mac);
+    printf("Dst MAC         : %s\n", p->ether.dst_mac);
+    printf("Ethertype       : 0x%04x\n", p->ether.ethertype);
     puts("\n");
-    printf("Source Port     : %u\n", p->src_port);
-    printf("Destination Port: %u\n", p->dst_port);
+    printf("Src IP          : %s\n", p->ip.src);
+    printf("Dst IP          : %s\n", p->ip.dst);
+    puts("\n");
+    printf("Src Port        : %u\n", p->src_port);
+    printf("Dst Port        : %u\n", p->dst_port);
     printf("Seq Number      : %u\n", p->seq_num);
     printf("Ack Number      : %u\n", p->ack_num);
     printf("Flags           : %s\n", p->flags_str);
@@ -79,19 +70,23 @@ void print_tcp_packet(const unsigned char *packet, uint32_t wire_len, const tcp_
     printf("Header Length   : %u bytes\n", p->header_len);
     printf("Data Length     : %u bytes\n", p->data_len);
     printf("Total on wire   : %u bytes\n", wire_len);
-    printf("Raw Bytes       : "); dump_hex_single_line(packet, wire_len);
-
-    puts("===========================");
+    printf("Raw Bytes       : "); dump_hex_single_line(frame, wire_len);
+    puts("\n===========================\n");
 }
 
 void tcp_handler(
     unsigned char            *user,
     const struct pcap_pkthdr *hdr,
-    const unsigned char      *packet
+    const unsigned char      *frame
 ) {
     (void)user;
-
     tcp_packet pkt;
-    if (parse_tcp_packet(packet, hdr->len, &pkt) == 0)
-        print_tcp_packet(packet, hdr->len, &pkt);
+
+    int offset = 0;
+    offset += parse_ethernet_header(frame + offset, hdr->len - offset, &pkt.ether);
+    offset += parse_ip_header(frame + offset, hdr->len - offset, &pkt.ip);
+    parse_tcp_header(frame + offset, hdr->len - offset, &pkt);
+
+
+    print_tcp_packet(frame, hdr->len, &pkt);
 }

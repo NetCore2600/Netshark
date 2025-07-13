@@ -18,11 +18,11 @@
 #define ETHERTYPE_MPLS_MCAST 0x8848  /* MPLS multicast (EtherType)    */
 
 /* ---- raw wire header (no FCS) ---------------------------------------- */
-typedef struct _ether_header {
+typedef struct _ether_info {
     uint8_t  dst[6];
     uint8_t  src[6];
     uint16_t type_len;           /* EtherType (>= 0x0600) or length */
-} ether_header;
+} ether_info;
 
 /* ---- optional 802.1Q tag --------------------------------------------- */
 typedef struct _vlan_tag {
@@ -42,9 +42,9 @@ typedef struct {
     uint16_t vlan_tpid;          /* 0x8100 / 0x88A8                  */
     uint16_t vlan_vid;           /* 0‑4095                           */
     uint8_t  vlan_pcp;           /* 0‑7                              */
-} ether;
+} eth_header;
 
 /* ---- prototype ------------------------------------------------------- */
-int parse_ethernet_frame(const unsigned char *buf, size_t len, ether *out);
+int parse_ethernet_header(const unsigned char *buf, size_t len, eth_header *out);
 
 #endif /* ETHERNET_H */
