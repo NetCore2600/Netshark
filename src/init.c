@@ -10,7 +10,7 @@ static HandlerPacket handlers = {
     .udp = udp_handler,
     .arp = arp_handler,
     .ftp = ftp_handler,
-    // .http = http_handler
+    .http = http_handler
 };
 
 static void init_inet(NetShark *n, Args args)

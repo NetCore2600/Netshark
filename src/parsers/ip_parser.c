@@ -35,5 +35,5 @@ int parse_ip_header(const unsigned char *frame, size_t frame_len, ip_header *out
     ip_to_str(&iph->src, out->src, sizeof(out->src));
     ip_to_str(&iph->dst, out->dst, sizeof(out->dst));
 
-    return (int)out->header_len; // offset to next protocol layer (e.g., TCP)
+    return out->header_len; // offset to next protocol layer (e.g., TCP)
 }

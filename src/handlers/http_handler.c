@@ -1,138 +1,138 @@
-#include "netshark.h"
 #include "http.h"
-#include "ethernet.h"
-#include "tcp.h"
-#include "ip.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <arpa/inet.h>
 
-void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
+int parse_http_packet(const unsigned char *data, size_t len, http_packet *out) {
+    if (!data || !out || len == 0) return -1;
+
+    const char *start = (const char *)data;
+    const char *end = start + len;
+
+    // Detect if response or request
+    if (strncmp(start, "HTTP/", 5) == 0) {
+        out->is_response = 1;
+        sscanf(start, "%15s %d %[^\r\n]", out->version, &out->status_code, out->status_message);
+    } else {
+        out->is_request = 1;
+        sscanf(start, "%15s %255s %15s", out->method, out->path, out->version);
+    }
+
+    // Locate headers
+    const char *headers_start = strstr(start, "\r\n");
+    if (!headers_start) return 0;
+    headers_start += 2;
+
+    const char *body_start = strstr(headers_start, "\r\n\r\n");
+    if (body_start) {
+        out->header_len = body_start + 4 - start;
+
+        size_t headers_len = body_start - headers_start;
+        if (headers_len < sizeof(out->headers)) {
+            memcpy(out->headers, headers_start, headers_len);
+            out->headers[headers_len] = '\0';
+        }
+
+        body_start += 4;
+        size_t body_len = end - body_start;
+        out->data_len = body_len < sizeof(out->body) ? body_len : sizeof(out->body) - 1;
+        memcpy(out->body, body_start, out->data_len);
+        out->body[out->data_len] = '\0';
+    } else {
+        out->header_len = len;
+    }
+
+    return 0;
+}
+
+
+void print_http_packet(const unsigned char *packet, uint32_t wire_len, const http_packet *p)
 {
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char time_buf[20];
+    strftime(time_buf, sizeof(time_buf), "%H:%M:%S", tm_info);
+
+    if (p->is_response)
+        printf("=== HTTP Response ===\n");
+    else
+        printf("=== HTTP Request ===\n");
+    printf("Src MAC        : %s\n", p->tcp.ether.src_mac);
+    printf("Dst MAC        : %s\n", p->tcp.ether.dst_mac);
+    printf("Ethertype      : 0x%04x\n", ntohs(p->tcp.ether.ethertype));
+    puts("\n");
+    printf("Source IP      : %s\n", p->tcp.ip.src);
+    printf("Destination IP : %s\n", p->tcp.ip.dst);
+    puts("\n");
+    printf("Source Port     : %u\n", p->tcp.src_port);
+    printf("Destination Port: %u\n", p->tcp.dst_port);
+    printf("Seq Number      : %u\n", p->tcp.seq_num);
+    printf("Ack Number      : %u\n", p->tcp.ack_num);
+    printf("Flags           : %s\n", p->tcp.flags_str);
+    printf("Window Size     : %u\n", p->tcp.window);
+    puts("\n");
+    printf("\n[%s] HTTP %s:%d -> %s:%d\n", time_buf,
+           p->tcp.ip.src, p->tcp.src_port,
+           p->tcp.ip.dst, p->tcp.dst_port);
+    printf("Header Length   : %u bytes\n", p->header_len);
+    printf("Data Length     : %u bytes\n", p->data_len);
+    if (p->is_response)
+    {
+        printf("Version       : %s\n", p->version);
+        printf("Status Code   : %d\n", p->status_code);
+        printf("Status Msg    : %s\n", p->status_message);
+    }
+    else if (p->is_request)
+    {
+        printf("Method        : %s\n", p->method);
+        printf("Path          : %s\n", p->path);
+        printf("Version       : %s\n", p->version);
+    }
+
+    if (*p->headers)
+    {
+        printf("\nHeaders:\n%s\n", p->headers);
+    }
+
+    if (*p->body)
+    {
+        printf("\nBody:\n%s\n", p->body);
+    }
+
+    printf("Total on wire   : %u bytes\n", wire_len);
+    printf("Raw Bytes       : ");
+    dump_hex_single_line(packet, wire_len);
+    printf("\n===========================\n");
+}
+
+void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet) {
     (void)args;
 
-    ether_header *eth;
-    ip_header *ip;
-    tcp_header *tcp;
-    char src_ip[INET_ADDRSTRLEN];
-    char dst_ip[INET_ADDRSTRLEN];
-    time_t now;
-    struct tm *timeinfo;
-    char time_str[20];
-    int ip_header_len;
-    int tcp_header_len;
-    int payload_len;
-    const unsigned char *payload;
+    http_packet p;
+    int offset = 0;
 
-    // Récupération de l'heure actuelle
-    time(&now);
-    timeinfo = localtime(&now);
-    strftime(time_str, sizeof(time_str), "%H:%M:%S", timeinfo);
 
-    // Analyse de l'en-tête Ethernet
-    eth = (ether_header *)packet;
+    offset += parse_ethernet_header(packet, header->len, &p.tcp.ether);
+    offset += parse_ip_header(packet + offset, header->len - offset, &p.tcp.ip);
+    offset += parse_tcp_header(packet + offset, header->len - offset, &p.tcp);
+    
+    print_tcp_packet(packet, header->len, &p.tcp);
 
-    // Vérification que c'est bien un paquet IP
-    if (ntohs(eth->type_len) != ETHERTYPE_IPV4)
+    uint16_t sport = p.tcp.src_port;
+    uint16_t dport = p.tcp.dst_port;
+
+    if (sport != HTTP_PORT && dport != HTTP_PORT && sport != HTTP_PORT_ALT && dport != HTTP_PORT_ALT)
     {
+        fprintf(stderr, "Error: can't recongnize HTTP port\n");
         return;
     }
 
-    // Analyse de l'en-tête IP
-    ip = (ip_header *)(packet + sizeof(ether_header));
-    ip_header_len = (ip->ip_vhl & 0x0F) * 4;
-
-
-    // Vérification que c'est bien un paquet TCP
-    if (ip->ip_p != IPPROTO_TCP)
-    {
-        return;
-    }
-
-    // Analyse de l'en-tête TCP
-    tcp = (tcp_header *)(packet + sizeof(ether_header) + ip_header_len);
-    tcp_header_len = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
-
-    // Vérification que c'est bien un paquet HTTP (port 80 ou 8080)
-    uint16_t src_port = ntohs(tcp->th_sport);
-    uint16_t dst_port = ntohs(tcp->th_dport);
-    if (src_port != 80 && src_port != 8080 && dst_port != 80 && dst_port != 8080)
-    {
-        return;
-    }
-
-    // Extraction des données
-    payload = (unsigned char *)(packet + sizeof(ether_header) + ip_header_len + tcp_header_len);
-    payload_len = header->len - (sizeof(ether_header) + ip_header_len + tcp_header_len);
-
-    // Conversion des adresses IP
-    inet_ntop(AF_INET, &(ip->ip_src), src_ip, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(ip->ip_dst), dst_ip, INET_ADDRSTRLEN);
-
-    // Traitement des données HTTP
-    if (payload_len > 0)
-    {
-        char *data = (char *)payload;
-        char *end = data + payload_len;
-        char *line_end;
-        char method[10] = {0};
-        char path[256] = {0};
-        char version[10] = {0};
-        int status_code = 0;
-        char status_message[256] = {0};
-
-        // Affichage des informations de base
-        printf("\n[%s] HTTP %s:%d -> %s:%d\n",
-               time_str, src_ip, src_port, dst_ip, dst_port);
-
-        // Vérifier si c'est une requête ou une réponse HTTP
-        if (strncmp(data, "HTTP/", 5) == 0)
-        {
-            // C'est une réponse HTTP
-            sscanf(data, "%s %d %[^\r\n]", version, &status_code, status_message);
-            printf("=== HTTP Response ===\n");
-            printf("Version: %s\n", version);
-            printf("Status Code: %d\n", status_code);
-            printf("Status Message: %s\n", status_message);
-        }
-        else
-        {
-            // C'est une requête HTTP
-            sscanf(data, "%s %s %s", method, path, version);
-            printf("=== HTTP Request ===\n");
-            printf("Method: %s\n", method);
-            printf("Path: %s\n", path);
-            printf("Version: %s\n", version);
-        }
-
-        // Analyser les en-têtes
-        printf("\nHeaders:\n");
-        char *current = strstr(data, "\r\n");
-        if (current)
-        {
-            current += 2; // Passer les \r\n
-            while (current < end)
-            {
-                line_end = strstr(current, "\r\n");
-                if (!line_end)
-                    break;
-
-                if (line_end == current)
-                {
-                    // Fin des en-têtes
-                    break;
-                }
-
-                // Afficher l'en-tête
-                printf("%.*s\n", (int)(line_end - current), current);
-                current = line_end + 2;
-            }
-        }
-
-        // Afficher le corps si présent
-        if (current && current < end)
-        {
-            printf("\nBody:\n");
-            printf("%.*s\n", (int)(end - current), current);
-        }
-
-        printf("==========================\n");
+    const unsigned char *payload = packet + offset;
+    int payload_len = p.tcp.data_len;
+    if (payload_len > 0) {
+        parse_http_packet(payload, header->len - offset, &p);
+        print_http_packet(packet, header->len, &p);
     }
 }
