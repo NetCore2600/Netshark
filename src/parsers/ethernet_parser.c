@@ -1,13 +1,6 @@
 #include "netshark.h"
 #include "ethernet.h"
 
-/* helper: format MAC as colon‑separated string */
-static void mac_to_str(const uint8_t mac[6], char *dst, size_t dstframe_len)
-{
-    snprintf(dst, dstframe_len, "%02X:%02X:%02X:%02X:%02X:%02X",
-             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-}
-
 /* ---------------------------------------------------------------------- */
 int parse_ethernet_header(
     const unsigned char *frame,

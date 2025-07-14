@@ -104,11 +104,14 @@ Netshark is a network packet analyzer built with a modular and layered architect
 The architecture is designed to be modular, making it easy to maintain and extend. Each component has a clear responsibility, and the code is organized to separate concerns between packet capture, processing, and display.
 
 
-## Packets
+### What is a packet ?
 [ Ethernet (14 bytes) ]
 [ IP (20-60 bytes) ]
 [ TCP (20+ bytes) ]
 [ Payload ]
+
+<br>
+<br>
 
 ## Network Layer
 
@@ -159,6 +162,21 @@ packet structure
 |-----------------------------------------|
 |        Target Protocol Address          |
 +-----------------------------------------+
+
+<br>
+
+### 🔍 Here's how ARP typically works:
+1. **Client initiates ARP request**
+When a host (e.g., your computer) wants to send an IP packet to another device on the **same local network (LAN)**, it needs the **MAC address** of the destination.
+
+- If the destination is on the same subnet:
+   - The client sends an **ARP Request:** *“Who has IP X.X.X.X? Tell me your MAC.”*
+
+- If the destination is outside the subnet:
+   - The client instead needs the MAC address of the default gateway (router).
+   - So the client sends an ARP request for the router’s IP address.
+
+In both cases, the **client initiates** the ARP request.
 
 <br>
 <br>

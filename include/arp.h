@@ -1,46 +1,47 @@
 #ifndef ARP_H
-# define ARP_H
+#define ARP_H
 
 #include "netshark.h"
 #include "ethernet.h"
+#include <stdint.h>
+#include <netinet/in.h>
 
 /*** MACROS ***/
 #define ARP_REQUEST                 1
 #define ARP_REPLY                   2
-#define ARP_HARDWARE_TYPE_ETHERNET  1
+#define ARP_HARDWARE_TYPE_ETHERNET 1
 
-/*** STRUCTURE ***/
+/*** STRUCTURE DEFINITIONS ***/
 typedef struct _arp_header {
-    unsigned short ar_hrd;
-    unsigned short ar_pro;
-    unsigned char ar_hln;
-    unsigned char ar_pln;
-    unsigned short ar_op;
-    unsigned char ar_sha[6];
-    unsigned char ar_sip[4];
-    unsigned char ar_tha[6];
-    unsigned char ar_tip[4];
+    uint16_t hrd;    // Hardware type
+    uint16_t pro;    // Protocol type
+    uint8_t  hln;    // Hardware address length
+    uint8_t  pln;    // Protocol address length
+    uint16_t op;     // Operation code
+    uint8_t  sha[6]; // Sender hardware address
+    uint8_t  sip[4]; // Sender IP address
+    uint8_t  tha[6]; // Target hardware address
+    uint8_t  tip[4]; // Target IP address
 } arp_header;
 
 typedef struct {
-    /* ---- Ethernet header (comes first on wire) -------------------- */
-    ether ether;               
+    eth_header ether;
 
-    /* ---- ARP header (wire order) ---------------------------------- */
-    uint16_t hardware_type;              /* HTYPE  */
-    uint16_t protocol_type;              /* PTYPE  */
-    uint8_t  hardware_size;              /* HLEN   */
-    uint8_t  protocol_size;              /* PLEN   */
-    uint16_t operation;                  /* OPER   */
+    uint16_t hardware_type;
+    uint16_t protocol_type;
+    uint8_t  hardware_size;
+    uint8_t  protocol_size;
+    uint16_t operation;
 
-    char     sender_mac[ETH_ADDR_STRLEN];   /* SHA   */
-    char     sender_ip[INET_ADDRSTRLEN];    /* SPA   */
-    char     target_mac[ETH_ADDR_STRLEN];   /* THA   */
-    char     target_ip[INET_ADDRSTRLEN];    /* TPA   */
+    char sender_mac[ETH_ADDR_STRLEN];
+    char sender_ip[INET_ADDRSTRLEN];
+    char target_mac[ETH_ADDR_STRLEN];
+    char target_ip[INET_ADDRSTRLEN];
 } arp_packet;
 
 /*** PROTOTYPES ***/
 void arp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 int parse_arp_packet(const unsigned char *frame, size_t frame_len, arp_packet *out);
+void print_arp_packet(const unsigned char *packet, uint32_t wire_len, const arp_packet *p);
 
 #endif /* ARP_H */
