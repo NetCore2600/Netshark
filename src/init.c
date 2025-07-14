@@ -4,13 +4,15 @@
 #include "udp.h"
 #include "ftp.h"
 #include "http.h"
+#include "icmp.h"
 
 static HandlerPacket handlers = {
     .tcp = tcp_handler,
     .udp = udp_handler,
     .arp = arp_handler,
     .ftp = ftp_handler,
-    .http = http_handler
+    .http = http_handler,
+    .icmp = icmp_handler
 };
 
 static void init_inet(NetShark *n, Args args)
@@ -111,6 +113,10 @@ static void init_filter(NetShark *n, Args args)
     {
         filter_exp = "arp";
     }
+    else if (strcmp(args.filter_exp, "icmp") == 0)
+    {
+        filter_exp = "icmp";
+    }
 
     // Copier le filtre traduit
     strncpy(bpf_filter, filter_exp, sizeof(bpf_filter) - 1);
@@ -161,6 +167,10 @@ static void init_packet_handler(NetShark *n, Args args)
     else if (!strcmp(args.filter_exp, "http"))
     {
         n->handler = handlers.http;
+    }
+    else if (!strcmp(args.filter_exp, "icmp"))
+    {
+        n->handler = handlers.icmp;
     }
     else
     {

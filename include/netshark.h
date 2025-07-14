@@ -47,6 +47,7 @@ typedef struct {
     void (*arp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*ftp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*http)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*icmp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 } HandlerPacket;
 
 
