@@ -1,77 +1,79 @@
 #include "ftp.h"
-#include "tcp.h"
-#include "netshark.h"
-#include "ip.h"
-#include "ethernet.h"
+#include <string.h>
+#include <ctype.h>
+#include <stdio.h>
 
-void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet)
-{
-    (void)args;
+void parse_ftp_packet(const unsigned char *data, size_t len, ftp_packet *pkt) {
+    if (!data || !pkt || len == 0) return;
 
-    ether_header *eth;
-    ip_header *ip;
-    tcp_header *tcp;
-    char src_ip[INET_ADDRSTRLEN];
-    char dst_ip[INET_ADDRSTRLEN];
-    time_t now;
-    struct tm *timeinfo;
-    char time_str[20];
-    int ip_header_len;
-    int tcp_header_len;
-    int payload_len;
-    const unsigned char *payload;
+    size_t copy_len = len < sizeof(pkt->raw) - 1 ? len : sizeof(pkt->raw) - 1;
+    memcpy(pkt->raw, data, copy_len);
+    pkt->raw[copy_len] = '\0';
 
-    // Récupération de l'heure actuelle
-    time(&now);
-    timeinfo = localtime(&now);
-    strftime(time_str, sizeof(time_str), "%H:%M:%S", timeinfo);
-
-    // Analyse de l'en-tête Ethernet
-    eth = (ether_header *)packet;
-
-    // Vérification que c'est bien un paquet IP
-    if (ntohs(eth->type_len) != ETHERTYPE_IPV4)
-    {
-        return;
+    // Detect if it's a response or command
+    if (isdigit(pkt->raw[0]) && isdigit(pkt->raw[1]) && isdigit(pkt->raw[2]) && pkt->raw[3] == ' ') {
+        pkt->is_response = 1;
+        sscanf(pkt->raw, "%d %[^\r\n]", &pkt->response_code, pkt->message);
+    } else {
+        pkt->is_response = 0;
+        sscanf(pkt->raw, "%7s %[^\r\n]", pkt->command, pkt->arguments);
     }
+}
 
-    // Analyse de l'en-tête IP
-    ip = (ip_header *)(packet + sizeof(ether_header));
-    ip_header_len = (ip & 0x0F) * 4;
 
-    // Vérification que c'est bien un paquet TCP
-    if (ip->ip_p != IPPROTO_TCP)
-    {
-        return;
+void print_ftp_packet(const unsigned char *frame, uint32_t wire_len, const ftp_packet *pkt) {
+    puts("\n=== FTP Packet =============");
+    printf("Src MAC             : %s\n", pkt->tcp.ether.src_mac);
+    printf("Dst MAC             : %s\n", pkt->tcp.ether.dst_mac);
+    printf("Ethertype           : 0x%04x\n", pkt->tcp.ether.ethertype);
+    puts("");
+    printf("Src IP              : %s\n", pkt->tcp.ip.src);
+    printf("Dst IP              : %s\n", pkt->tcp.ip.dst);
+    puts("");
+    printf("Src Port            : %u\n", pkt->tcp.src_port);
+    printf("Dst Port            : %u\n", pkt->tcp.dst_port);
+    printf("Seq Number          : %u\n", pkt->tcp.seq_num);
+    printf("Ack Number          : %u\n", pkt->tcp.ack_num);
+    printf("Flags               : %s\n", pkt->tcp.flags_str);
+    printf("Window Size         : %u\n", pkt->tcp.window);
+    printf("Header Length       : %u bytes\n", pkt->tcp.header_len);
+    printf("Data Length         : %u bytes\n", pkt->tcp.data_len);
+    puts("");
+    if (pkt->is_response) {
+        printf("Response Code       : %d\n", pkt->response_code);
+        printf("Message             : %s\n", pkt->message);
+    } else {
+        printf("Command         : %s\n", pkt->command);
+        printf("Arguments       : %s\n", pkt->arguments);
     }
+    puts("");
+    printf("Total on wire       : %u bytes\n", wire_len);
+    printf("Raw Bytes           : "); dump_hex_single_line(frame, wire_len);
+    puts("\n===========================\n");
+}
 
-    // Analyse de l'en-tête TCP
-    tcp = (tcp_header *)(packet + sizeof(ether_header) + ip_header_len);
-    tcp_header_len = ((tcp->th_offx2 & 0xf0) >> 4) * 4;
 
-    // Vérification que c'est bien un paquet FTP (port 21)
-    if (ntohs(tcp->th_sport) != 21 && ntohs(tcp->th_dport) != 21)
-    {
+void ftp_handler(
+    unsigned char *user,
+    const struct pcap_pkthdr *hdr,
+    const unsigned char *packet
+) {
+    (void)user;
+    ftp_packet pkt;
+    int offset = 0;
+
+    offset += parse_ethernet_header(packet, hdr->len, &pkt.tcp.ether);
+    offset += parse_ip_header(packet + offset, hdr->len - offset, &pkt.tcp.ip);
+    offset += parse_tcp_header(packet + offset, hdr->len - offset, &pkt.tcp);
+
+    // Parse only if port matches FTP control port
+    if (pkt.tcp.src_port != FTP_PORT && pkt.tcp.dst_port != FTP_PORT)
         return;
-    }
 
-    // Extraction des données
-    payload = (unsigned char *)(packet + sizeof(ether_header) + ip_header_len + tcp_header_len);
-    payload_len = header->len - (sizeof(ether_header) + ip_header_len + tcp_header_len);
-
-    // Conversion des adresses IP
-    inet_ntop(AF_INET, &(ip->src), src_ip, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(ip->dst), dst_ip, INET_ADDRSTRLEN);
-
-    // Affichage des informations de base
-    printf("\n[%s] ", time_str);
-    printf("FTP %s:%d -> %s:%d\n",
-           src_ip, ntohs(tcp->th_sport),
-           dst_ip, ntohs(tcp->th_dport));
-
-    // Traitement des données FTP
-    if (payload_len > 0)
-    {
-        parse_ftp_packet(payload, payload_len);
+    const unsigned char *payload = packet + offset;
+    int payload_len = pkt.tcp.data_len;
+    if (payload_len > 0) {
+        parse_ftp_packet(payload, payload_len, &pkt);
+        print_ftp_packet(packet, hdr->len, &pkt);
     }
 }

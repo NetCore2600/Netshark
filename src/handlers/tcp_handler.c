@@ -57,10 +57,10 @@ void print_tcp_packet(const unsigned char *frame, uint32_t wire_len, const tcp_p
     printf("Src MAC         : %s\n", p->ether.src_mac);
     printf("Dst MAC         : %s\n", p->ether.dst_mac);
     printf("Ethertype       : 0x%04x\n", p->ether.ethertype);
-    puts("\n");
+    puts("");
     printf("Src IP          : %s\n", p->ip.src);
     printf("Dst IP          : %s\n", p->ip.dst);
-    puts("\n");
+    puts("");
     printf("Src Port        : %u\n", p->src_port);
     printf("Dst Port        : %u\n", p->dst_port);
     printf("Seq Number      : %u\n", p->seq_num);
@@ -69,6 +69,7 @@ void print_tcp_packet(const unsigned char *frame, uint32_t wire_len, const tcp_p
     printf("Window Size     : %u\n", p->window);
     printf("Header Length   : %u bytes\n", p->header_len);
     printf("Data Length     : %u bytes\n", p->data_len);
+    puts("");
     printf("Total on wire   : %u bytes\n", wire_len);
     printf("Raw Bytes       : "); dump_hex_single_line(frame, wire_len);
     puts("\n===========================\n");

@@ -2,6 +2,7 @@
 #define FTP_H
 
 #include "netshark.h"
+#include "tcp.h"
 
 /*** MACROS ***/
 #define FTP_PORT        21
@@ -43,25 +44,21 @@
 #define FTP_CMD_NOOP "NOOP"
 
 /*** STRUCTURE ***/
-typedef struct {
-    char command[5];
-    char *argument;
-} ftp_command;
 
 typedef struct {
-    int code;
-    char *message;
-} ftp_response;
+    tcp_packet tcp;
+    char raw[1024];       // Raw FTP payload
+    char command[8];      // For client commands: "USER", "PASS", etc.
+    char arguments[1016]; // Everything after the command
+    int is_response;      // 1 = server response, 0 = client command
+    int response_code;    // If response: numeric code like 220, 331, etc.
+    char message[1016];   // Response message
+} ftp_packet;
 
-struct ftp_data {
-    char command[5];
-    char argument[256];
-    unsigned int code;
-    char message[512];
-};
 
 /*** PROTOTYPES ***/
 void ftp_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-void parse_ftp_packet(const unsigned char *packet, size_t packet_len);
+void parse_ftp_packet(const unsigned char *data, size_t len, ftp_packet *pkt);
+void print_ftp_packet(const unsigned char *frame, uint32_t wire_len, const ftp_packet *pkt);
 
 #endif /* FTP_H */

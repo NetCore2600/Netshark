@@ -62,7 +62,7 @@ void init(NetShark *n, Args args);
 
 // /src/utils.c
 void dump_hex_single_line(const uint8_t *buf, size_t len);
-
+void mac_to_str(const uint8_t mac[6], char *dst, size_t dstframe_len);
 
 
 #endif /* NETCORE_H */
