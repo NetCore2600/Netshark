@@ -52,8 +52,7 @@ int parse_tcp_header(const unsigned char *frame, size_t frame_len, tcp_packet *o
 
 
 void print_tcp_packet(const unsigned char *frame, uint32_t wire_len, const tcp_packet *p) {
-    puts("\n=== TCP Packet (Parsed) ===");
-    puts("\n");
+    puts("\n=== TCP Packet ============");
     printf("Src MAC         : %s\n", p->ether.src_mac);
     printf("Dst MAC         : %s\n", p->ether.dst_mac);
     printf("Ethertype       : 0x%04x\n", p->ether.ethertype);

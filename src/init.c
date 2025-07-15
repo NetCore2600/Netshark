@@ -5,14 +5,18 @@
 #include "ftp.h"
 #include "http.h"
 #include "icmp.h"
+#include "dhcp.h"
+#include "dns.h"
 
 static HandlerPacket handlers = {
+    .arp = arp_handler,
+    .icmp = icmp_handler,
     .tcp = tcp_handler,
     .udp = udp_handler,
-    .arp = arp_handler,
     .ftp = ftp_handler,
     .http = http_handler,
-    .icmp = icmp_handler
+    .dhcp = dhcp_handler,
+    .dns = dns_handler
 };
 
 static void init_inet(NetShark *n, Args args)
@@ -117,6 +121,14 @@ static void init_filter(NetShark *n, Args args)
     {
         filter_exp = "icmp";
     }
+    else if (strcmp(args.filter_exp, "dhcp") == 0)
+    {
+        filter_exp = "port 67 or port 68";
+    }
+    else if (strcmp(args.filter_exp, "dns") == 0)
+    {
+        filter_exp = "udp port 53 or tcp port 53";
+    }
 
     // Copier le filtre traduit
     strncpy(bpf_filter, filter_exp, sizeof(bpf_filter) - 1);
@@ -148,17 +160,21 @@ static void init_filter(NetShark *n, Args args)
 
 static void init_packet_handler(NetShark *n, Args args)
 {
-    if (!strcmp(args.filter_exp, "tcp"))
+    if (!strcmp(args.filter_exp, "arp"))
+    {
+        n->handler = handlers.arp;
+    }
+    else if (!strcmp(args.filter_exp, "icmp"))
+    {
+        n->handler = handlers.icmp;
+    }
+    else if (!strcmp(args.filter_exp, "tcp"))
     {
         n->handler = handlers.tcp;
     }
     else if (!strcmp(args.filter_exp, "udp"))
     {
         n->handler = handlers.udp;
-    }
-    else if (!strcmp(args.filter_exp, "arp"))
-    {
-        n->handler = handlers.arp;
     }
     else if (!strcmp(args.filter_exp, "ftp"))
     {
@@ -168,9 +184,13 @@ static void init_packet_handler(NetShark *n, Args args)
     {
         n->handler = handlers.http;
     }
-    else if (!strcmp(args.filter_exp, "icmp"))
+    else if (!strcmp(args.filter_exp, "dhcp"))
     {
-        n->handler = handlers.icmp;
+        n->handler = handlers.http;
+    }
+    else if (!strcmp(args.filter_exp, "dns"))
+    {
+        n->handler = handlers.dns;
     }
     else
     {
