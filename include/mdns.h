@@ -16,5 +16,5 @@ typedef struct {
 int parse_mdns_packet(const unsigned char *data, size_t len, mdns_packet *out);
 void print_mdns_packet(const unsigned char *packet, uint32_t wire_len, const mdns_packet *mdns);
 void mdns_handler(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
-
+void print_dns_answers(const unsigned char *data, size_t len, size_t offset, uint16_t ancount);
 #endif // MDNS_H
