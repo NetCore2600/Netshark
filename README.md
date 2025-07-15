@@ -247,3 +247,7 @@ A summary of the contents of the internet header follows:
 ### HTTP
 
 RFC: https://datatracker.ietf.org/doc/html/rfc7540
+
+### DHCP
+
+RFC: https://datatracker.ietf.org/doc/html/rfc2131
