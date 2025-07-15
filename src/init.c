@@ -7,6 +7,7 @@
 #include "icmp.h"
 #include "dhcp.h"
 #include "dns.h"
+#include "mdns.h"
 
 static HandlerPacket handlers = {
     .arp = arp_handler,
@@ -16,7 +17,8 @@ static HandlerPacket handlers = {
     .ftp = ftp_handler,
     .http = http_handler,
     .dhcp = dhcp_handler,
-    .dns = dns_handler
+    .dns = dns_handler,
+    .mdns = mdns_handler
 };
 
 static void init_inet(NetShark *n, Args args)
@@ -129,6 +131,10 @@ static void init_filter(NetShark *n, Args args)
     {
         filter_exp = "udp port 53 or tcp port 53";
     }
+    else if (strcmp(args.filter_exp, "mdns") == 0)
+    {
+        filter_exp = "udp port 5353";
+    }
 
     // Copier le filtre traduit
     strncpy(bpf_filter, filter_exp, sizeof(bpf_filter) - 1);
@@ -191,6 +197,10 @@ static void init_packet_handler(NetShark *n, Args args)
     else if (!strcmp(args.filter_exp, "dns"))
     {
         n->handler = handlers.dns;
+    }
+    else if (!strcmp(args.filter_exp, "mdns"))
+    {
+        n->handler = handlers.mdns;
     }
     else
     {

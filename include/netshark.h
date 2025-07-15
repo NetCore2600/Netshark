@@ -50,6 +50,7 @@ typedef struct {
     void (*icmp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*dhcp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*dns)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*mdns)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 } HandlerPacket;
 
 
