@@ -118,8 +118,6 @@ void http_handler(unsigned char *args, const struct pcap_pkthdr *header, const u
     offset += parse_ip_header(packet + offset, header->len - offset, &p.tcp.ip);
     offset += parse_tcp_header(packet + offset, header->len - offset, &p.tcp);
     
-    print_tcp_packet(packet, header->len, &p.tcp);
-
     uint16_t sport = p.tcp.src_port;
     uint16_t dport = p.tcp.dst_port;
 
