@@ -1,5 +1,5 @@
-#ifndef NETCORE_H
-# define NETCORE_H
+#ifndef NETSHARK_H
+# define NETSHARK_H
 
 #include <stdio.h>
 #include <pcap.h>
@@ -51,6 +51,7 @@ typedef struct {
     void (*dhcp)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*dns)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
     void (*mdns)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
+    void (*tls)(unsigned char *args, const struct pcap_pkthdr *header, const unsigned char *packet);
 } HandlerPacket;
 
 
@@ -69,4 +70,4 @@ void dump_hex_single_line(const uint8_t *buf, size_t len);
 void mac_to_str(const uint8_t mac[6], char *dst, size_t dstframe_len);
 
 
-#endif /* NETCORE_H */
+#endif /* NETSHARK_H */

@@ -8,6 +8,7 @@
 #include "dhcp.h"
 #include "dns.h"
 #include "mdns.h"
+#include "tls.h"
 
 static HandlerPacket handlers = {
     .arp = arp_handler,
@@ -18,7 +19,8 @@ static HandlerPacket handlers = {
     .http = http_handler,
     .dhcp = dhcp_handler,
     .dns = dns_handler,
-    .mdns = mdns_handler
+    .mdns = mdns_handler,
+    .tls = tls_handler 
 };
 
 static void init_inet(NetShark *n, Args args)
@@ -131,6 +133,10 @@ static void init_filter(NetShark *n, Args args)
     {
         filter_exp = "udp port 53 or tcp port 53";
     }
+    else if (strcmp(args.filter_exp, "tls") == 0 || strcmp(args.filter_exp, "ssl") == 0)
+    {
+        filter_exp = "tcp port 443 or tcp port 465 or tcp port 993 or tcp port 995";
+    }
     else if (strcmp(args.filter_exp, "mdns") == 0)
     {
         filter_exp = "udp port 5353";
@@ -198,6 +204,11 @@ static void init_packet_handler(NetShark *n, Args args)
     {
         n->handler = handlers.dns;
     }
+    else if (!strcmp(args.filter_exp, "tls") || !strcmp(args.filter_exp, "ssl"))
+    {
+        n->handler = handlers.tls;
+    }
+
     else if (!strcmp(args.filter_exp, "mdns"))
     {
         n->handler = handlers.mdns;
